@@ -1,0 +1,427 @@
+/**
+ * Vietnamese translations for FocusLearn
+ */
+
+import { TranslationKeys } from './en';
+
+export const vi: TranslationKeys = {
+  // App
+  app: {
+    name: 'FocusLearn',
+    tagline: 'Hệ thống học tập',
+  },
+
+  // Navigation / Sidebar
+  nav: {
+    dashboard: 'Trang chủ',
+    inbox: 'Hộp thư',
+    todo: 'Việc cần làm',
+    tasks: 'Công việc',
+    projects: 'Dự án',
+    notes: 'Ghi chú',
+    flashcards: 'Thẻ nhớ',
+    timer: 'Đồng hồ',
+    sessions: 'Phiên học',
+    analytics: 'Thống kê',
+    settings: 'Cài đặt',
+    chat: 'Trợ lý AI',
+    search: 'Tìm kiếm...',
+  },
+
+  // Dashboard
+  dashboard: {
+    title: 'Trang chủ',
+    subtitle: 'Tổng quan học tập',
+    greeting: 'Chào mừng trở lại',
+    greetingMorning: 'Chào buổi sáng',
+    greetingAfternoon: 'Chào buổi chiều',
+    greetingEvening: 'Chào buổi tối',
+    todaysTasks: 'Công việc hôm nay',
+    recentSessions: 'Phiên gần đây',
+    quickStats: 'Thống kê nhanh',
+    focusMinutes: 'Phút tập trung',
+    tasksCompleted: 'Việc hoàn thành',
+    streakDays: 'Ngày liên tiếp',
+    avgQuizScore: 'Điểm TB bài kiểm',
+    // Dashboard cards
+    todaysFocus: 'Tập trung hôm nay',
+    currentStreak: 'Chuỗi ngày',
+    cardsDue: 'Thẻ cần ôn',
+    startFocusSession: 'Bắt đầu tập trung',
+    viewAll: 'Xem tất cả',
+    noTasksToday: 'Không có công việc hôm nay',
+    addTasksToSee: 'Thêm công việc có hạn để xem tại đây',
+    addTask: 'Thêm việc',
+    flashcardReview: 'Ôn tập thẻ nhớ',
+    allCaughtUp: 'Đã hoàn thành!',
+    noFlashcardsDue: 'Không có thẻ cần ôn hôm nay',
+    cardsDueToday: 'thẻ cần ôn hôm nay',
+    startReviewSession: 'Bắt đầu ôn tập',
+    currentCycle: 'Chu kỳ hiện tại',
+    manage: 'Quản lý',
+    progress: 'Tiến độ',
+    tasks: 'việc',
+    noActiveCycle: 'Không có chu kỳ',
+    createCycleDesc: 'Tạo chu kỳ tuần để theo dõi tiến độ',
+    triage: 'Phân loại',
+    inboxZero: 'Hộp thư trống!',
+    quickCapturesHere: 'Ghi chú nhanh sẽ hiển thị tại đây',
+    moreItems: 'mục khác',
+    noSessionsYet: 'Chưa có phiên học',
+    startSessionDesc: 'Bắt đầu phiên tập trung để theo dõi tiến độ',
+    startSession: 'Bắt đầu',
+    thisWeek: 'Tuần này',
+    minutesFocused: 'phút tập trung trong',
+    sessionsText: 'phiên',
+    viewAnalytics: 'Xem thống kê',
+    // Todo widget
+    todoToday: 'Việc hôm nay',
+    noTodosToday: 'Không có việc hôm nay',
+    addFirstTodo: 'Thêm việc đầu tiên để bắt đầu',
+    quickNoteCapture: 'Ghi nhanh',
+  },
+
+  // Timer
+  timer: {
+    title: 'Đồng hồ tập trung',
+    subtitle: 'Cấu hình và bắt đầu phiên học',
+    pomodoroSessions: 'Phiên Pomodoro',
+    subject: 'Môn học',
+    focusDuration: 'Thời gian tập trung',
+    breakDuration: 'Thời gian nghỉ',
+    planBreak: 'Kế hoạch nghỉ (Tùy chọn)',
+    startSession: 'Bắt đầu phiên học',
+    pause: 'Tạm dừng',
+    resume: 'Tiếp tục',
+    stop: 'Dừng',
+    zen: 'Zen',
+    logDistraction: 'Ghi phân tâm',
+    complete: 'hoàn thành',
+    sessionComplete: 'Hoàn thành phiên tập trung!',
+    keyboardHint: 'Phím tắt: Space = Tạm dừng/Tiếp tục, Z = Chế độ Zen, R = Đặt lại',
+    exitZen: 'Thoát Zen',
+    // Open-ended mode
+    sessionMode: 'Chế độ phiên',
+    timed: 'Hẹn giờ',
+    openEnded: 'Tự do',
+    timedDesc: 'Đặt thời gian và đếm ngược',
+    openEndedDesc: 'Không giới hạn - dừng khi sẵn sàng',
+    stopAnytime: 'Bạn có thể dừng bất cứ lúc nào',
+    elapsedTime: 'Thời gian đã học',
+    endSession: 'Kết thúc phiên',
+    endSessionPrompt: 'Kết thúc phiên tập trung?',
+    focusRating: 'Bạn tập trung như thế nào?',
+    skipQuiz: 'Bỏ qua bài kiểm',
+    takeQuiz: 'Làm bài kiểm',
+    // Todo linking
+    linkTodo: 'Liên kết việc',
+    selectTodo: 'Chọn việc để tập trung',
+    noTodoLinked: 'Chưa liên kết việc',
+    linkedTo: 'Liên kết với',
+  },
+
+  // Quiz
+  quiz: {
+    title: 'Bài kiểm',
+    subtitle: 'Kiểm tra kiến thức',
+    question: 'Câu hỏi',
+    submit: 'Nộp bài',
+    score: 'Điểm',
+    passed: 'Làm tốt lắm!',
+    failed: 'Tiếp tục cố gắng!',
+    retry: 'Làm lại',
+    skip: 'Bỏ qua',
+    continueBtn: 'Tiếp tục',
+    explanation: 'Giải thích',
+    correct: 'Đúng!',
+    incorrect: 'Sai',
+  },
+
+  // Tasks
+  tasks: {
+    title: 'Công việc',
+    subtitle: 'Quản lý công việc',
+    newTask: 'Việc mới',
+    todo: 'Cần làm',
+    inProgress: 'Đang làm',
+    done: 'Hoàn thành',
+    priority: 'Ưu tiên',
+    dueDate: 'Hạn',
+    estimate: 'Ước tính',
+    noTasks: 'Chưa có công việc',
+    addFirst: 'Thêm công việc đầu tiên',
+  },
+
+  // Todo (Notion-like checklist)
+  todo: {
+    title: 'Việc cần làm',
+    subtitle: 'Danh sách công việc hàng ngày',
+    addPlaceholder: 'Thêm việc mới...',
+    noTodos: 'Chưa có việc',
+    addFirstTodo: 'Thêm việc đầu tiên',
+    addFirstTodoDesc: 'Nhấn Enter để thêm mục mới',
+    all: 'Tất cả',
+    active: 'Đang làm',
+    completed: 'Hoàn thành',
+    clearCompleted: 'Xóa đã hoàn thành',
+    itemsLeft: 'việc còn lại',
+    itemLeft: 'việc còn lại',
+    priority: {
+      low: 'Thấp',
+      medium: 'Trung bình',
+      high: 'Cao',
+      urgent: 'Khẩn cấp',
+    },
+    dueToday: 'Đến hạn hôm nay',
+    overdue: 'Quá hạn',
+    noDueDate: 'Không có hạn',
+    setDueDate: 'Đặt hạn',
+    editTitle: 'Sửa tiêu đề',
+    deleteTodo: 'Xóa việc',
+  },
+
+  // Projects
+  projects: {
+    title: 'Dự án',
+    subtitle: 'Môn học & chu kỳ',
+    newProject: 'Dự án mới',
+    noProjects: 'Chưa có dự án',
+  },
+
+  // Notes
+  notes: {
+    title: 'Ghi chú',
+    subtitle: 'Kho kiến thức',
+    newNote: 'Ghi chú mới',
+    noNotes: 'Chưa có ghi chú',
+    startWriting: 'Bắt đầu viết',
+    quickNote: 'Ghi nhanh',
+    quickNotePlaceholder: 'Viết ghi chú nhanh...',
+  },
+
+  // Flashcards
+  flashcards: {
+    title: 'Thẻ nhớ',
+    subtitle: 'Lặp lại ngắt quãng',
+    newDeck: 'Bộ thẻ mới',
+    dueToday: 'Cần ôn hôm nay',
+    review: 'Ôn tập',
+    noDecks: 'Chưa có bộ thẻ nhớ',
+    createFirst: 'Tạo bộ thẻ đầu tiên',
+    easy: 'Dễ',
+    medium: 'Trung bình',
+    hard: 'Khó',
+    again: 'Lại',
+  },
+
+  // Sessions
+  sessions: {
+    title: 'Lịch sử phiên học',
+    subtitle: 'Xem lại các phiên trước',
+    noSessions: 'Chưa có phiên học',
+    startFirst: 'Hoàn thành phiên tập trung đầu tiên',
+    duration: 'Thời lượng',
+    distractions: 'Phân tâm',
+    mode: 'Chế độ',
+    rating: 'Đánh giá tập trung',
+  },
+
+  // Analytics
+  analytics: {
+    title: 'Thống kê',
+    subtitle: 'Theo dõi tiến trình',
+    totalFocus: 'Tổng thời gian tập trung',
+    avgSession: 'TB phiên học',
+    bestHour: 'Giờ học tốt nhất',
+    topDistraction: 'Phân tâm nhiều nhất',
+    weeklyProgress: 'Tiến trình tuần',
+  },
+
+  // Settings
+  settings: {
+    title: 'Cài đặt',
+    subtitle: 'Tùy chỉnh không gian làm việc',
+    // Sections
+    appearance: 'Giao diện',
+    profile: 'Hồ sơ',
+    language: 'Ngôn ngữ',
+    timerConfig: 'Cấu hình đồng hồ',
+    aiFeatures: 'Tính năng AI',
+    dataManagement: 'Quản lý dữ liệu',
+    // Theme
+    theme: 'Chủ đề',
+    themeLight: 'Sáng',
+    themeDark: 'Tối',
+    themeSystem: 'Hệ thống',
+    // Profile
+    yourName: 'Tên của bạn',
+    namePlaceholder: 'Nhập tên của bạn',
+    nameHint: 'Hiển thị trong lời chào và ngữ cảnh AI',
+    // Language
+    languageSelect: 'Ngôn ngữ hiển thị',
+    english: 'Tiếng Anh',
+    vietnamese: 'Tiếng Việt',
+    // Timer
+    focusDuration: 'Thời gian tập trung (phút)',
+    shortBreak: 'Nghỉ ngắn (phút)',
+    longBreak: 'Nghỉ dài (phút)',
+    cyclesBeforeLong: 'Số phiên trước nghỉ dài',
+    // AI
+    aiEnabled: 'AI đã bật',
+    aiDisabled: 'AI đã tắt',
+    aiConfigured: 'Tính năng AI khả dụng',
+    aiMissing: 'Cấu hình API key trong biến môi trường',
+    aiActive: 'Hoạt động',
+    aiInactive: 'Không hoạt động',
+    aiDescription: 'Tính năng AI bao gồm tạo bài kiểm, thẻ nhớ và huấn luyện học tập.',
+    aiHelpTooltip: 'Thiết lập Gemini API key trong biến môi trường của repository để bật tính năng AI.',
+    getApiKey: 'Lấy API key từ',
+    // Data
+    dataDescription: 'Xuất dữ liệu để chuyển thiết bị hoặc sao lưu. Tất cả dữ liệu được lưu trữ cục bộ trong trình duyệt.',
+    exportData: 'Xuất dữ liệu',
+    importData: 'Nhập dữ liệu',
+    clearData: 'Xóa tất cả dữ liệu',
+    clearConfirm: 'Bạn có chắc muốn xóa tất cả dữ liệu? Hành động này không thể hoàn tác.',
+    storageUsed: 'Dung lượng sử dụng',
+    schemaVersion: 'Phiên bản schema',
+    importSuccess: 'Nhập dữ liệu thành công',
+    importFailed: 'Nhập dữ liệu thất bại',
+    exportSuccess: 'Đã xuất dữ liệu',
+    // Summary
+    dataSummary: 'Tóm tắt dữ liệu',
+  },
+
+  // AI Chat
+  chat: {
+    title: 'Trợ lý AI',
+    subtitle: 'Trợ lý học tập của bạn',
+    newChat: 'Cuộc trò chuyện mới',
+    today: 'Hôm nay',
+    yesterday: 'Hôm qua',
+    older: 'Trước đó',
+    searchChats: 'Tìm cuộc trò chuyện...',
+    typeMessage: 'Nhập tin nhắn...',
+    send: 'Gửi',
+    generating: 'Đang tạo...',
+    thinking: 'Đang suy nghĩ...',
+    enterToSend: 'Enter để gửi, Shift+Enter để xuống dòng',
+    // Context panel
+    studyContext: 'Ngữ cảnh học tập',
+    contextEnabled: 'Ngữ cảnh đã bật',
+    userInfo: 'Thông tin người dùng',
+    activeTask: 'Công việc đang làm',
+    noActiveTask: 'Không có công việc đang làm',
+    todayTodos: 'Todo hôm nay',
+    noTodos: 'Chưa có todo',
+    todayTasksSummary: 'Công việc hôm nay',
+    noTasks: 'Chưa có công việc',
+    flashcardsDue: 'Thẻ cần ôn',
+    recentSessions: 'Phiên gần đây',
+    noRecentSessions: 'Chưa có phiên nào',
+    wrongTopics: 'Chủ đề cần ôn',
+    recentDistractions: 'Phân tâm gần đây',
+    none: 'Không có',
+    // Quick actions
+    quickActions: 'Hành động nhanh',
+    explainConcept: 'Giải thích khái niệm',
+    studyPlan: 'Lập kế hoạch 30 phút',
+    practiceQuestions: 'Tạo câu hỏi luyện tập',
+    summarizeNotes: 'Tóm tắt ghi chú',
+    quizMe: 'Kiểm tra ngay',
+    // Context toggles
+    includeTasks: 'Bao gồm công việc hôm nay',
+    includeProject: 'Bao gồm môn học hiện tại',
+    includeQuizMistakes: 'Bao gồm lỗi bài kiểm gần đây',
+    includeDistractions: 'Bao gồm phân tâm gần đây',
+    includeNotes: 'Bao gồm ghi chú đã chọn',
+    // States
+    aiUnavailable: 'AI hiện không khả dụng',
+    offlineMode: 'Chế độ ngoại tuyến',
+    offlineMessage: 'AI đang ở chế độ ngoại tuyến. Hãy thử các hành động nhanh ở trên để nhận hướng dẫn học tập mẫu.',
+    noChats: 'Chưa có cuộc trò chuyện',
+    startConversation: 'Bắt đầu cuộc trò chuyện đầu tiên',
+    startNewChat: 'Bắt đầu chat mới',
+    deleteChat: 'Xóa cuộc trò chuyện',
+    deleteConfirm: 'Xóa cuộc trò chuyện này?',
+    rename: 'Đổi tên',
+    renameChat: 'Đổi tên cuộc trò chuyện',
+    miniChat: 'Chat nhanh',
+    copy: 'Sao chép',
+    copySuccess: 'Đã sao chép vào bộ nhớ tạm',
+    retry: 'Thử lại',
+    errorResponse: 'Đã xảy ra lỗi. Vui lòng thử lại.',
+    aiUnreachableToast: 'Không kết nối được AI. Thử lại nhé.',
+    aiUnreachableMessage: 'Không kết nối được AI. Thử lại nhé.',
+  },
+
+  // Inbox
+  inbox: {
+    title: 'Hộp thư',
+    subtitle: 'Ghi nhanh & phân loại',
+    quickCapture: 'Ghi nhanh',
+    noItems: 'Hộp thư trống',
+    captureIdeas: 'Ghi lại ý tưởng nhanh chóng',
+    convertToTask: 'Chuyển thành công việc',
+    convertToNote: 'Chuyển thành ghi chú',
+    archive: 'Lưu trữ',
+  },
+
+  // Break activities
+  break: {
+    water: 'Uống nước',
+    stretch: 'Giãn cơ',
+    breathe: 'Thở',
+    walk: 'Đi bộ',
+    eyes: 'Nghỉ mắt',
+    snack: 'Ăn nhẹ',
+  },
+
+  // Distractions
+  distractions: {
+    title: 'Ghi phân tâm',
+    description: 'Điều gì làm bạn mất tập trung? Điều này giúp nhận biết mẫu.',
+    phone: 'Điện thoại',
+    socialMedia: 'Mạng xã hội',
+    noise: 'Tiếng ồn',
+    people: 'Người khác',
+    thoughts: 'Suy nghĩ lan man',
+    hunger: 'Đói/Khát',
+    tired: 'Mệt mỏi',
+    other: 'Khác',
+  },
+
+  // Common
+  common: {
+    save: 'Lưu',
+    cancel: 'Hủy',
+    delete: 'Xóa',
+    edit: 'Sửa',
+    close: 'Đóng',
+    confirm: 'Xác nhận',
+    loading: 'Đang tải...',
+    error: 'Lỗi',
+    success: 'Thành công',
+    min: 'phút',
+    minutes: 'phút',
+    hours: 'giờ',
+    days: 'ngày',
+    of: 'của',
+    and: 'và',
+    review: 'Ôn tập',
+  },
+
+  // Empty states
+  empty: {
+    noData: 'Chưa có dữ liệu',
+    getStarted: 'Bắt đầu',
+  },
+
+  // Offline templates for AI chat
+  offline: {
+    explainConcept: "Tôi sẵn lòng giải thích khái niệm! Khi kết nối, tôi có thể cung cấp giải thích chi tiết về bất kỳ chủ đề nào. Hiện tại, hãy thử chia nhỏ khái niệm và xem lại ghi chú của bạn.",
+    studyPlan: "Đây là mẫu kế hoạch học 30 phút:\n\n1. **0-5 phút**: Ôn lại bài trước\n2. **5-20 phút**: Học chủ động (đọc, làm bài tập)\n3. **20-25 phút**: Tự kiểm tra hoặc thẻ nhớ\n4. **25-30 phút**: Tóm tắt điểm chính\n\nĐiều chỉnh theo môn học và mục tiêu của bạn!",
+    practiceQuestions: "Tôi có thể tạo câu hỏi luyện tập khi kết nối. Hiện tại, hãy thử:\n\n1. Biến ghi chú thành câu hỏi\n2. Tự giải thích khái niệm\n3. Tạo thẻ nhớ từ thuật ngữ quan trọng\n4. Luyện tập câu hỏi bài kiểm cũ",
+    summarizeNotes: "Để tóm tắt ghi chú hiệu quả:\n\n1. Xác định chủ đề chính\n2. Liệt kê 3-5 điểm quan trọng\n3. Ghi lại công thức hoặc định nghĩa\n4. Viết liên kết với các chủ đề khác\n\nTôi có thể giúp tóm tắt nội dung cụ thể khi kết nối!",
+    quizMe: "Tôi sẽ kiểm tra bạn khi kết nối! Hiện tại, hãy thử:\n\n1. Che ghi chú và nhớ lại điểm chính\n2. Sử dụng bộ thẻ nhớ của bạn\n3. Giải thích khái niệm không nhìn\n4. Trả lời câu hỏi cuối chương",
+  },
+} as const;
