@@ -11,9 +11,10 @@ export default defineConfig({
   base: '/aptechhn-n5/',
   plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^npm:(.*)$/, replacement: '$1' },
+    ],
   },
   test: {
     environment: 'jsdom',
@@ -24,6 +25,7 @@ export default defineConfig({
     },
     setupFiles: ['src/test/setup.ts'],
     globals: false,
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'supabase/functions/**/*.{test,spec}.ts'],
     exclude: [...configDefaults.exclude, '**/.worktrees/**'],
   },
 });
