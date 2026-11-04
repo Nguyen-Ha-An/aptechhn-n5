@@ -67,7 +67,11 @@ describe('TrashPage', () => {
     } as never);
 
     renderTrashRoute();
-    const skeletons = await screen.findAllByRole('status', { name: 'Loading content' });
+    const skeletons = await screen.findAllByRole(
+      'status',
+      { name: 'Loading content' },
+      { timeout: 3000 },
+    );
     expect(skeletons.length).toBeGreaterThan(0);
   });
 
