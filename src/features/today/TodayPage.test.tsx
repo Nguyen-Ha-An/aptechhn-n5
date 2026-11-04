@@ -105,9 +105,10 @@ describe('Today page', () => {
     const greeting = await screen.findByText(/Good (morning|afternoon|evening), (Alex|there)/i);
     expect(greeting).toBeInTheDocument();
 
-    // Check primary button
-    const cta = screen.getByRole('button', { name: 'Start focus session' });
+    // Check primary CTA link
+    const cta = screen.getByRole('link', { name: 'Start focus session' });
     expect(cta).toBeInTheDocument();
+    expect(cta).toHaveAttribute('href', '/focus');
   });
 
   it('renders empty states when queries return []', async () => {

@@ -95,6 +95,8 @@ export function TodoRow({
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const editInputRef = useRef<HTMLInputElement>(null);
+  const isCancelingRef = useRef(false);
+  const isSavingRef = useRef(false);
 
   if (todo.title !== prevTitle) {
     setPrevTitle(todo.title);
@@ -115,7 +117,18 @@ export function TodoRow({
     });
   };
 
+  const handleStartEditing = () => {
+    isCancelingRef.current = false;
+    isSavingRef.current = false;
+    setDraftTitle(todo.title);
+    setIsEditing(true);
+  };
+
   const handleSaveTitle = () => {
+    if (isCancelingRef.current || isSavingRef.current) {
+      return;
+    }
+    isSavingRef.current = true;
     const trimmed = draftTitle.trim();
     if (trimmed && trimmed !== todo.title) {
       updateTodo.mutate({
@@ -129,6 +142,7 @@ export function TodoRow({
   };
 
   const handleCancelEdit = () => {
+    isCancelingRef.current = true;
     setDraftTitle(todo.title);
     setIsEditing(false);
   };
@@ -136,7 +150,7 @@ export function TodoRow({
   const handleTitleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      handleSaveTitle();
+      e.currentTarget.blur();
     } else if (e.key === 'Escape') {
       e.preventDefault();
       handleCancelEdit();
@@ -205,7 +219,9 @@ export function TodoRow({
   const { label: dueDateText, isOver: isDueDateOver } = getDueDateDisplay(todo.due_date, tz);
 
   return (
+    /* eslint-disable-next-line jsx-a11y/no-static-element-interactions */
     <div
+      onKeyDown={handleRowKeyDown}
       className="group relative flex items-center gap-3 rounded-[6px] border-b border-rule/50 px-3 py-2.5 transition-colors duration-120 hover:bg-surface/60"
     >
       {/* Checkbox with accessible name matching todo title */}
@@ -215,7 +231,6 @@ export function TodoRow({
           type="checkbox"
           checked={todo.done}
           onChange={handleToggleDone}
-          onKeyDown={handleRowKeyDown}
           aria-label={todo.title}
           className="h-4 w-4 cursor-pointer rounded-[4px] accent-accent focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         />
@@ -237,8 +252,7 @@ export function TodoRow({
         ) : (
           <button
             type="button"
-            onClick={() => setIsEditing(true)}
-            onKeyDown={handleRowKeyDown}
+            onClick={handleStartEditing}
             aria-label={`Edit title: ${todo.title}`}
             className={`w-full truncate rounded-[4px] px-1 py-0.5 text-left text-sm transition-colors cursor-pointer select-text focus-visible:outline-2 focus-visible:outline-accent ${
               todo.done ? 'text-muted line-through' : 'text-ink hover:text-ink/80'

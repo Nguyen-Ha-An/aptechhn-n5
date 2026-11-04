@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { FileText } from '@phosphor-icons/react';
 import { PageHeader } from '@/components/PageHeader';
-import { Button, EmptyState, ErrorState, Skeleton } from '@/components/ui';
+import { EmptyState, ErrorState, Skeleton } from '@/components/ui';
 import { formatLongDate, browserTimeZone } from '@/lib/dates';
 import { useProfile } from '@/features/profile/queries';
 import { useTodos, useMoveTodo } from '@/features/todos/queries';
@@ -74,8 +74,11 @@ export function TodayPage() {
 
       {/* Focal point: Primary button */}
       <div>
-        <Link to="/focus">
-          <Button variant="primary">Start focus session</Button>
+        <Link
+          to="/focus"
+          className="inline-flex items-center justify-center font-medium rounded-[6px] transition-colors duration-120 ease-out select-none focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 text-sm px-3.5 py-2 min-h-[44px] md:min-h-[38px] gap-2 bg-accent text-accent-ink hover:opacity-90 active:opacity-95 shadow-none cursor-pointer"
+        >
+          Start focus session
         </Link>
       </div>
 
@@ -106,10 +109,9 @@ export function TodayPage() {
             <EmptyState title="Nothing due today." body="You have no overdue or today tasks." />
           ) : (
             <div className="divide-y divide-rule/30">
-              {dueTodayTodos.map((todo) => {
-                const currentIndex = allTodos.findIndex((t) => t.id === todo.id);
+              {dueTodayTodos.map((todo, currentIndex) => {
                 const canMoveUp = currentIndex > 0;
-                const canMoveDown = currentIndex < allTodos.length - 1;
+                const canMoveDown = currentIndex < dueTodayTodos.length - 1;
 
                 return (
                   <TodoRow
@@ -119,13 +121,13 @@ export function TodayPage() {
                     canMoveUp={canMoveUp}
                     canMoveDown={canMoveDown}
                     onMoveUp={() => {
-                      const prev = allTodos[currentIndex - 1];
+                      const prev = dueTodayTodos[currentIndex - 1];
                       if (prev) {
                         moveTodo.mutate({ todo, neighbour: prev });
                       }
                     }}
                     onMoveDown={() => {
-                      const next = allTodos[currentIndex + 1];
+                      const next = dueTodayTodos[currentIndex + 1];
                       if (next) {
                         moveTodo.mutate({ todo, neighbour: next });
                       }

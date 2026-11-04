@@ -5,18 +5,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TodoRow } from './TodoRow';
 import type { Todo } from './queries';
 
-// Mock supabase module
+// Mock supabase module with inspectable mocks
+const mockUpdate = vi.fn(() => ({
+  eq: vi.fn(() => ({
+    select: vi.fn(() => ({
+      single: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    })),
+  })),
+}));
+
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     from: vi.fn(() => ({
-      update: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          select: vi.fn(() => ({
-            single: vi.fn().mockResolvedValue({ data: {}, error: null }),
-          })),
-        })),
-      })),
+      update: mockUpdate,
       delete: vi.fn(() => ({
         eq: vi.fn().mockResolvedValue({ error: null }),
       })),
@@ -76,10 +78,19 @@ describe('TodoRow', () => {
     expect(checkbox).not.toBeChecked();
 
     await user.click(checkbox);
-    // After clicking, updateTodo mutation is triggered
+
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          done: true,
+          completed_at: expect.any(String),
+        }),
+      );
+    });
   });
 
-  it('enters inline edit mode, and Esc cancels edit reverting changes', async () => {
+  it('saves title once on Enter and does not double-save when blurred', async () => {
     const user = userEvent.setup();
     const todo = createTestTodo({ title: 'Complete calculus homework' });
 
@@ -88,28 +99,47 @@ describe('TodoRow', () => {
     const titleButton = screen.getByRole('button', {
       name: 'Edit title: Complete calculus homework',
     });
-    expect(titleButton).toBeInTheDocument();
-
-    // Click to enter inline edit mode
     await user.click(titleButton);
 
     const input = screen.getByRole('textbox', { name: 'Edit todo title' });
-    expect(input).toBeInTheDocument();
-    expect(input).toHaveValue('Complete calculus homework');
+    await user.clear(input);
+    await user.type(input, 'New homework title{Enter}');
 
-    // Type extra text
-    await user.type(input, ' and submit it');
-    expect(input).toHaveValue('Complete calculus homework and submit it');
+    await waitFor(() => {
+      expect(mockUpdate).toHaveBeenCalledTimes(1);
+      expect(mockUpdate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'New homework title',
+        }),
+      );
+    });
+  });
+
+  it('cancels edit on Escape and does not save on blur', async () => {
+    const user = userEvent.setup();
+    const todo = createTestTodo({ title: 'Original title' });
+
+    renderWithClient(<TodoRow todo={todo} tz="Asia/Ho_Chi_Minh" />);
+
+    const titleButton = screen.getByRole('button', {
+      name: 'Edit title: Original title',
+    });
+    await user.click(titleButton);
+
+    const input = screen.getByRole('textbox', { name: 'Edit todo title' });
+    await user.clear(input);
+    await user.type(input, 'Changed title');
 
     // Press Escape to cancel
     await user.keyboard('{Escape}');
 
-    // Edit input should be gone, original title should remain
     await waitFor(() => {
       expect(screen.queryByRole('textbox', { name: 'Edit todo title' })).not.toBeInTheDocument();
     });
+
+    expect(mockUpdate).not.toHaveBeenCalled();
     expect(
-      screen.getByRole('button', { name: 'Edit title: Complete calculus homework' }),
+      screen.getByRole('button', { name: 'Edit title: Original title' }),
     ).toBeInTheDocument();
   });
 
@@ -124,7 +154,7 @@ describe('TodoRow', () => {
     expect(menuButton).toBeInTheDocument();
   });
 
-  it('triggers onMoveUp and onMoveDown via Alt+Arrow keys on focused row', async () => {
+  it('triggers onMoveUp and onMoveDown via Alt+Arrow keys from any focused control in row', async () => {
     const user = userEvent.setup();
     const onMoveUp = vi.fn();
     const onMoveDown = vi.fn();
@@ -144,7 +174,6 @@ describe('TodoRow', () => {
     const titleButton = screen.getByRole('button', {
       name: 'Edit title: Reorderable task',
     });
-
     titleButton.focus();
 
     await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
@@ -152,5 +181,12 @@ describe('TodoRow', () => {
 
     await user.keyboard('{Alt>}{ArrowDown}{/Alt}');
     expect(onMoveDown).toHaveBeenCalledTimes(1);
+
+    // Also verify from checkbox
+    const checkbox = screen.getByRole('checkbox', { name: 'Reorderable task' });
+    checkbox.focus();
+
+    await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
+    expect(onMoveUp).toHaveBeenCalledTimes(2);
   });
 });

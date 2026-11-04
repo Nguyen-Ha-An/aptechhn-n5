@@ -50,32 +50,33 @@ export function TodosPage() {
   const grouped = groupTodos(allTodos, tz);
   const totalTodosCount = allTodos.length;
 
-  const renderTodoItem = (todo: Todo) => {
-    const currentIndex = allTodos.findIndex((t) => t.id === todo.id);
-    const canMoveUp = currentIndex > 0;
-    const canMoveDown = currentIndex < allTodos.length - 1;
+  const renderSectionTodos = (sectionTodos: Todo[]) => {
+    return sectionTodos.map((todo, currentIndex) => {
+      const canMoveUp = currentIndex > 0;
+      const canMoveDown = currentIndex < sectionTodos.length - 1;
 
-    return (
-      <TodoRow
-        key={todo.id}
-        todo={todo}
-        tz={tz}
-        canMoveUp={canMoveUp}
-        canMoveDown={canMoveDown}
-        onMoveUp={() => {
-          const prev = allTodos[currentIndex - 1];
-          if (prev) {
-            moveTodo.mutate({ todo, neighbour: prev });
-          }
-        }}
-        onMoveDown={() => {
-          const next = allTodos[currentIndex + 1];
-          if (next) {
-            moveTodo.mutate({ todo, neighbour: next });
-          }
-        }}
-      />
-    );
+      return (
+        <TodoRow
+          key={todo.id}
+          todo={todo}
+          tz={tz}
+          canMoveUp={canMoveUp}
+          canMoveDown={canMoveDown}
+          onMoveUp={() => {
+            const prev = sectionTodos[currentIndex - 1];
+            if (prev) {
+              moveTodo.mutate({ todo, neighbour: prev });
+            }
+          }}
+          onMoveDown={() => {
+            const next = sectionTodos[currentIndex + 1];
+            if (next) {
+              moveTodo.mutate({ todo, neighbour: next });
+            }
+          }}
+        />
+      );
+    });
   };
 
   return (
@@ -135,7 +136,7 @@ export function TodosPage() {
                 Overdue
               </h2>
               <div className="divide-y divide-rule/30">
-                {grouped.overdue.map(renderTodoItem)}
+                {renderSectionTodos(grouped.overdue)}
               </div>
             </section>
           )}
@@ -150,7 +151,7 @@ export function TodosPage() {
                 Today
               </h2>
               <div className="divide-y divide-rule/30">
-                {grouped.today.map(renderTodoItem)}
+                {renderSectionTodos(grouped.today)}
               </div>
             </section>
           )}
@@ -165,7 +166,7 @@ export function TodosPage() {
                 Upcoming
               </h2>
               <div className="divide-y divide-rule/30">
-                {grouped.upcoming.map(renderTodoItem)}
+                {renderSectionTodos(grouped.upcoming)}
               </div>
             </section>
           )}
@@ -180,7 +181,7 @@ export function TodosPage() {
                 No date
               </h2>
               <div className="divide-y divide-rule/30">
-                {grouped.noDate.map(renderTodoItem)}
+                {renderSectionTodos(grouped.noDate)}
               </div>
             </section>
           )}
@@ -193,7 +194,7 @@ export function TodosPage() {
                   <span>Done ({grouped.done.length})</span>
                 </summary>
                 <div className="mt-2 divide-y divide-rule/30">
-                  {grouped.done.map(renderTodoItem)}
+                  {renderSectionTodos(grouped.done)}
                 </div>
                 <div className="mt-3">
                   <ConfirmDialog
