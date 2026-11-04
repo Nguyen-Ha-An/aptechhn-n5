@@ -40,7 +40,7 @@ function FullPageSkeleton() {
   );
 }
 
-export function AppLayout() {
+function AppLayout() {
   const { status } = useSession();
 
   if (status === 'loading') {

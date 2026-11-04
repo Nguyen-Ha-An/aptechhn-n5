@@ -51,11 +51,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       // Ignore
     }
 
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const mediaQuery =
+      typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
 
     const updateResolved = () => {
       const isDark =
-        themePref === 'dark' || (themePref === 'system' && mediaQuery.matches);
+        themePref === 'dark' ||
+        (themePref === 'system' && Boolean(mediaQuery?.matches));
       const nextResolved: ResolvedTheme = isDark ? 'dark' : 'light';
       document.documentElement.dataset.theme = nextResolved;
       setResolvedTheme(nextResolved);
@@ -63,7 +67,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     updateResolved();
 
-    if (themePref === 'system') {
+    if (themePref === 'system' && mediaQuery) {
       mediaQuery.addEventListener('change', updateResolved);
       return () => mediaQuery.removeEventListener('change', updateResolved);
     }

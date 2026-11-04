@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createRootRoute,
@@ -11,6 +11,8 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { Route as NoteRoute } from './$noteId';
+
+const NoteComponent = NoteRoute.options.component!;
 
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -33,13 +35,13 @@ describe('NotePlaceholderPage', () => {
 
   function renderNoteRoute(noteId = 'test-note-1') {
     const rootRoute = createRootRoute({
-      component: () => <NoteRoute.options.component />,
+      component: () => <NoteComponent />,
     });
 
     const route = createRoute({
       getParentRoute: () => rootRoute,
       path: '/notes/$noteId',
-      component: () => <NoteRoute.options.component />,
+      component: () => <NoteComponent />,
     });
 
     const router = createRouter({

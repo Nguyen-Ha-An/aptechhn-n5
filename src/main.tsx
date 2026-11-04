@@ -4,6 +4,10 @@ import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createHashHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import { Toaster } from 'sonner';
+import { isSupabaseConfigured } from './lib/supabase';
+import { ConfigurationMissing } from './components/ConfigurationMissing';
+import { AuthProvider } from './features/auth';
+import { ThemeProvider } from './features/theme/ThemeProvider';
 import { routeTree } from './routeTree.gen';
 
 export const queryClient = new QueryClient({
@@ -54,10 +58,18 @@ function ThemedToaster() {
 }
 
 export function App() {
+  if (!isSupabaseConfigured) {
+    return <ConfigurationMissing />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <ThemedToaster />
+      <AuthProvider>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+          <ThemedToaster />
+        </ThemeProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
