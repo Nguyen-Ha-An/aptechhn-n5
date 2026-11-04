@@ -29,8 +29,8 @@ export interface MailOptions {
 export async function getLatestOtpCode(email: string, options: MailOptions = {}): Promise<string> {
   const host = options.mailHost ?? process.env.SUPABASE_MAIL_HOST ?? '127.0.0.1';
   const port = options.mailPort ?? Number(process.env.SUPABASE_MAIL_PORT ?? 54324);
-  const timeoutMs = options.timeoutMs ?? 20_000;
-  const pollIntervalMs = options.pollIntervalMs ?? 500;
+  const timeoutMs = options.timeoutMs ?? 10_000;
+  const pollIntervalMs = options.pollIntervalMs ?? 300;
 
   const startTime = Date.now();
   const baseUrl = `http://${host}:${port}`;

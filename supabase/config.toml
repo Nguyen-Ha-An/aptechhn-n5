@@ -33,6 +33,10 @@ enable_confirmations = true
 otp_length = 6
 otp_expiry = 3600
 
+[auth.email.template.confirmation]
+subject = "Your FocusLearn sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
 [auth.email.template.magic_link]
 subject = "Your FocusLearn sign-in link"
 content_path = "./supabase/templates/magic_link.html"
