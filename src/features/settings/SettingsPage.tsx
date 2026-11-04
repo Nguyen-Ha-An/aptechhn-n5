@@ -416,7 +416,7 @@ function SettingsForm({ profile, userEmail }: SettingsFormProps) {
                   setAutoStartBreaks(e.target.checked);
                   updateProfile.mutate({ auto_start_breaks: e.target.checked });
                 }}
-                className="rounded border-rule text-accent focus:ring-accent h-4 w-4 cursor-pointer"
+                className="rounded border-rule accent-ink focus-visible:outline-2 focus-visible:outline-accent h-4 w-4 cursor-pointer"
               />
               <span>Auto-start breaks</span>
             </label>
@@ -427,7 +427,7 @@ function SettingsForm({ profile, userEmail }: SettingsFormProps) {
                   type="checkbox"
                   checked={notifications}
                   onChange={handleNotificationsToggle}
-                  className="rounded border-rule text-accent focus:ring-accent h-4 w-4 cursor-pointer"
+                  className="rounded border-rule accent-ink focus-visible:outline-2 focus-visible:outline-accent h-4 w-4 cursor-pointer"
                 />
                 <span>Timer notifications</span>
               </label>
@@ -468,7 +468,7 @@ function SettingsForm({ profile, userEmail }: SettingsFormProps) {
             </Button>
             <Link
               to="/settings/import"
-              className="text-sm font-medium text-ink underline hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm"
+              className="text-sm font-medium text-ink underline hover:text-muted focus-visible:outline-2 focus-visible:outline-accent rounded-sm"
             >
               Import from the old FocusLearn
             </Link>

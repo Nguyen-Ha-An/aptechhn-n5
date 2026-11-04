@@ -168,8 +168,10 @@ export function LoginPage() {
         ) : (
           <div className="space-y-5">
             <div className="rounded-[6px] border border-rule bg-paper p-3 text-center">
-              <p className="text-xs text-muted">Check your inbox at</p>
-              <p className="mt-0.5 truncate text-sm font-medium text-ink">{email}</p>
+              <p className="text-xs text-muted">
+                Check your inbox at{' '}
+                <span className="mt-0.5 block truncate text-sm font-medium text-ink">{email}</span>
+              </p>
             </div>
 
             <form onSubmit={handleVerifyOtp} noValidate className="space-y-4">

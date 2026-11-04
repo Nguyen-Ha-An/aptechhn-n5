@@ -317,7 +317,7 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
           <div>
             <span
               id="focus-mode-label"
-              className="block text-xs font-medium text-muted uppercase tracking-wider mb-2"
+              className="block text-xs font-semibold text-muted mb-2"
             >
               Focus mode
             </span>
@@ -588,7 +588,7 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
                         onClick={() => setSelectedCategory(cat.id)}
                         className={`rounded-[6px] px-2.5 py-1.5 text-xs text-left transition-colors duration-120 border cursor-pointer ${
                           selectedCategory === cat.id
-                            ? 'border-accent bg-paper text-ink font-semibold shadow-xs'
+                            ? 'border-ink bg-paper text-ink font-semibold shadow-xs'
                             : 'border-rule bg-surface text-muted hover:text-ink'
                         }`}
                       >
@@ -788,7 +788,7 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
                   onClick={() => setRating(val)}
                   className={`flex-1 h-11 rounded-[6px] border text-sm font-semibold transition-colors duration-120 cursor-pointer ${
                     rating === val
-                      ? 'border-accent bg-paper text-accent shadow-xs'
+                      ? 'border-ink bg-paper text-ink shadow-xs'
                       : 'border-rule bg-surface text-muted hover:text-ink'
                   }`}
                   aria-label={`Rating ${val} of 5`}

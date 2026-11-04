@@ -6,6 +6,19 @@ import { getLatestOtpCode } from './helpers/mail';
 // ============================================================================
 
 /**
+ * Open the mobile navigation drawer if on a mobile viewport (< 768px).
+ */
+async function openSidebarIfNeeded(page: Page) {
+  const menuBtn = page.getByRole('button', { name: 'Open navigation menu' });
+  if (await menuBtn.isVisible()) {
+    const dialog = page.getByRole('dialog', { name: 'Navigation' });
+    if (!(await dialog.isVisible())) {
+      await menuBtn.click();
+    }
+  }
+}
+
+/**
  * Sign in using email OTP code flow.
  */
 async function signInWithEmailOtp(page: Page, email: string) {
@@ -18,7 +31,8 @@ async function signInWithEmailOtp(page: Page, email: string) {
   await sendLinkBtn.click();
 
   // Wait for sent state confirmation
-  await expect(page.getByText(new RegExp(`Check your inbox at ${email}`, 'i'))).toBeVisible();
+  await expect(page.getByText(/check your inbox at/i)).toBeVisible();
+  await expect(page.getByText(email)).toBeVisible();
 
   // Retrieve OTP code from local mail server
   const otpCode = await getLatestOtpCode(email);
@@ -27,16 +41,12 @@ async function signInWithEmailOtp(page: Page, email: string) {
   const codeInput = page.getByRole('textbox', { name: /code|token/i });
   await codeInput.fill(otpCode);
 
-  // If a submit button is present, click it; otherwise press Enter
+  // Click Verify code button
   const verifyBtn = page.getByRole('button', { name: /verify|sign in|submit/i });
-  if (await verifyBtn.isVisible()) {
-    await verifyBtn.click();
-  } else {
-    await codeInput.press('Enter');
-  }
+  await verifyBtn.click();
 
   // User should land on the main authenticated view (Today)
-  await expect(page.getByRole('link', { name: 'Today' })).toBeVisible();
+  await expect(page.locator('#main')).toBeVisible();
 }
 
 /**
@@ -54,15 +64,16 @@ async function assertNoHorizontalOverflow(page: Page) {
 // ============================================================================
 
 test.describe('FocusLearn End-to-End Suite', () => {
-  const testEmail = `student-${Date.now()}@example.com`;
-
   test('complete study lifecycle: auth, todos, pages, focus, chat, theme', async ({ page }) => {
+    const testEmail = `student-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
+
     // 1. Sign in with OTP code
     await signInWithEmailOtp(page, testEmail);
 
     // ------------------------------------------------------------------------
     // 2. Add, complete, and undo todo
     // ------------------------------------------------------------------------
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: 'Todos' }).click();
     await expect(page.getByRole('heading', { name: 'Todos' })).toBeVisible();
 
@@ -85,21 +96,28 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // ------------------------------------------------------------------------
     // 3. Create page + subpage + [[link]], rename target, link still navigates
     // ------------------------------------------------------------------------
-    const newPageBtn = page.getByRole('button', { name: 'New page' });
+    await openSidebarIfNeeded(page);
+    const newPageBtn = page.getByRole('button', { name: 'New page' }).first();
     await newPageBtn.click();
 
     const targetTitle = 'Calculus Derivatives';
     const pageTitleInput = page.getByLabel('Page title');
+    await expect(pageTitleInput).toBeVisible();
     await pageTitleInput.fill(targetTitle);
-    await pageTitleInput.press('Enter');
 
-    // Create subpage from menu or sidebar
-    const addSubpageBtn = page.getByRole('button', { name: 'Add subpage' });
-    await addSubpageBtn.click();
+    // Wait for debounced autosave (500ms) to persist target page title
+    await page.waitForTimeout(700);
+
+    // Create subpage from Page options menu
+    const pageOptionsBtn = page.getByRole('button', { name: 'Page options' });
+    await pageOptionsBtn.click();
+    const addSubpageItem = page.getByRole('menuitem', { name: 'Add subpage' });
+    await addSubpageItem.click();
 
     const subpageTitle = 'Derivative Practice Problems';
+    await expect(pageTitleInput).toHaveValue('');
     await pageTitleInput.fill(subpageTitle);
-    await pageTitleInput.press('Enter');
+    await page.waitForTimeout(700);
 
     // Insert [[link]] in editor
     const editor = page.locator('.ProseMirror, [contenteditable="true"]').first();
@@ -108,40 +126,43 @@ test.describe('FocusLearn End-to-End Suite', () => {
 
     // Select the target page from suggestion list
     const linkSuggestion = page.getByRole('option', { name: new RegExp(targetTitle, 'i') });
-    if (await linkSuggestion.isVisible()) {
-      await linkSuggestion.click();
-    } else {
-      await page.keyboard.press('Enter');
-    }
+    await expect(linkSuggestion).toBeVisible();
+    await linkSuggestion.click();
 
     // Wait for autosave to settle
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(800);
 
     // Navigate to target page and rename it
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: targetTitle }).first().click();
+    await expect(pageTitleInput).toHaveValue(targetTitle);
     const renamedTargetTitle = 'Advanced Calculus Derivatives';
     await pageTitleInput.fill(renamedTargetTitle);
-    await pageTitleInput.press('Enter');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(800);
 
     // Return to subpage and click the link: should still navigate to the renamed target
-    await page.getByRole('link', { name: subpageTitle }).click();
-    const pageLinkNode = page.locator(`a[data-page-id], a:has-text("${renamedTargetTitle}")`).first();
+    await openSidebarIfNeeded(page);
+    const expandBtn = page.getByRole('button', { name: new RegExp(`Expand ${renamedTargetTitle}`, 'i') });
+    if (await expandBtn.isVisible()) {
+      await expandBtn.click();
+    }
+    await page.getByRole('link', { name: subpageTitle }).first().click();
+    await expect(pageTitleInput).toHaveValue(subpageTitle);
+
+    const pageLinkNode = page.locator('a[data-page-id]').first();
+    await expect(pageLinkNode).toBeVisible();
     await pageLinkNode.click();
     await expect(page.getByLabel('Page title')).toHaveValue(renamedTargetTitle);
 
     // ------------------------------------------------------------------------
     // 4. Focus session in open mode, distraction, reload, end, rate, save
     // ------------------------------------------------------------------------
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: 'Focus' }).click();
 
     // Use Open mode (since minimum timed mode is 5 minutes)
-    const openModeBtn = page.getByRole('button', { name: 'Open' });
-    if (await openModeBtn.isVisible()) {
-      await openModeBtn.click();
-    } else {
-      await page.getByRole('tab', { name: 'Open' }).click();
-    }
+    const openModeRadio = page.getByRole('radio', { name: 'Open' });
+    await openModeRadio.click();
 
     const startSessionBtn = page.getByRole('button', { name: 'Start focus session' });
     await startSessionBtn.click();
@@ -151,28 +172,25 @@ test.describe('FocusLearn End-to-End Suite', () => {
     await expect(endSessionBtn).toBeVisible();
 
     // Log a distraction
-    const logDistractionBtn = page.getByRole('button', { name: 'Log distraction' });
+    const logDistractionBtn = page.getByRole('button', { name: /log distraction/i });
     await logDistractionBtn.click();
     const phoneCategoryBtn = page.getByRole('button', { name: 'Phone' });
     await phoneCategoryBtn.click();
+    const saveDistractionBtn = page.getByRole('button', { name: 'Log', exact: true });
+    await saveDistractionBtn.click();
 
     // Reload page and assert session is still running
     await page.reload();
     await expect(page.getByRole('button', { name: 'End session' })).toBeVisible();
 
     // End session
-    await endSessionBtn.click();
-    const confirmEndBtn = page
-      .getByRole('alertdialog')
-      .getByRole('button', { name: 'End session' })
-      .or(page.getByRole('button', { name: 'End session' }).last());
+    await page.getByRole('button', { name: 'End session' }).click();
+    const confirmEndBtn = page.getByRole('alertdialog').getByRole('button', { name: 'End session' });
     await confirmEndBtn.click();
 
     // Rate session
-    const ratingRadio = page.getByRole('radio', { name: '5' }).or(page.getByLabel('5'));
-    if (await ratingRadio.isVisible()) {
-      await ratingRadio.click();
-    }
+    const ratingRadio = page.getByRole('radio', { name: /Rating 5 of 5/i });
+    await ratingRadio.click();
 
     // Save session
     const saveSessionBtn = page.getByRole('button', { name: 'Save session' });
@@ -182,23 +200,23 @@ test.describe('FocusLearn End-to-End Suite', () => {
     await expect(page.getByText(/first steps/i)).toBeVisible();
 
     // Navigate to sessions list and verify it is listed
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: 'Progress' }).click();
-    const allSessionsLink = page.getByRole('link', { name: /all sessions|sessions/i });
-    if (await allSessionsLink.isVisible()) {
-      await allSessionsLink.click();
-      await expect(page.getByRole('heading', { name: 'Sessions' })).toBeVisible();
-    }
+    const allSessionsLink = page.getByRole('link', { name: /all sessions/i });
+    await expect(allSessionsLink).toBeVisible();
+    await allSessionsLink.click();
+    await expect(page.getByRole('heading', { name: 'Sessions' })).toBeVisible();
 
     // ------------------------------------------------------------------------
     // 5. Chat with fake model streams "Echo:"
     // ------------------------------------------------------------------------
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: 'Chat' }).click();
-    const newChatBtn = page.getByRole('button', { name: 'New chat' });
-    if (await newChatBtn.isVisible()) {
-      await newChatBtn.click();
-    }
+    const newChatBtn = page.getByRole('button', { name: 'New chat' }).first();
+    await newChatBtn.click();
 
     const chatComposer = page.getByLabel('Message');
+    await expect(chatComposer).toBeVisible();
     await chatComposer.fill('Help me review calculus');
     await chatComposer.press('Enter');
 
@@ -208,17 +226,18 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // ------------------------------------------------------------------------
     // 6. Theme toggle
     // ------------------------------------------------------------------------
+    await openSidebarIfNeeded(page);
     await page.getByRole('link', { name: 'Settings' }).click();
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 
     // Switch to dark theme
-    const darkThemeBtn = page.getByRole('button', { name: 'Dark' }).or(page.getByLabel('Dark'));
-    await darkThemeBtn.click();
+    const darkThemeRadio = page.getByRole('radio', { name: 'Dark' });
+    await darkThemeRadio.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
     // Switch back to light theme
-    const lightThemeBtn = page.getByRole('button', { name: 'Light' }).or(page.getByLabel('Light'));
-    await lightThemeBtn.click();
+    const lightThemeRadio = page.getByRole('radio', { name: 'Light' });
+    await lightThemeRadio.click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   });
 
@@ -227,7 +246,7 @@ test.describe('FocusLearn End-to-End Suite', () => {
   // --------------------------------------------------------------------------
   test('no horizontal scroll overflow on mobile across all routes', async ({ page }) => {
     // Authenticate first
-    await signInWithEmailOtp(page, `mobile-check-${Date.now()}@example.com`);
+    await signInWithEmailOtp(page, `mobile-check-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`);
 
     const routes = [
       './#/',
@@ -254,24 +273,25 @@ test.describe('FocusLearn End-to-End Suite', () => {
   // --------------------------------------------------------------------------
   test('keyboard accessibility: Tab reaches skip link first and Escape closes dialogs', async ({ page }) => {
     // Authenticate first to mount AppShell with skip link
-    await signInWithEmailOtp(page, `keyboard-check-${Date.now()}@example.com`);
+    await signInWithEmailOtp(page, `keyboard-check-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`);
     await page.goto('./#/');
+    await expect(page.locator('#main')).toBeVisible();
 
-    // Tab reaches "Skip to content" link first
+    // Focus document body and press Tab to reach "Skip to content" link first
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
     await page.keyboard.press('Tab');
     const skipLink = page.getByRole('link', { name: /skip to content/i });
     await expect(skipLink).toBeFocused();
 
-    // Open any modal / dialog (e.g. search pages dialog or settings delete account dialog)
+    // Open search pages dialog (opening mobile drawer first if on mobile)
+    await openSidebarIfNeeded(page);
     const searchPagesBtn = page.getByRole('button', { name: /search pages/i });
-    if (await searchPagesBtn.isVisible()) {
-      await searchPagesBtn.click();
-      const dialog = page.getByRole('dialog');
-      await expect(dialog).toBeVisible();
+    await searchPagesBtn.click();
+    const searchDialog = page.getByRole('dialog', { name: /search pages/i });
+    await expect(searchDialog).toBeVisible();
 
-      // Press Escape to close dialog
-      await page.keyboard.press('Escape');
-      await expect(dialog).not.toBeVisible();
-    }
+    // Press Escape to close dialog
+    await page.keyboard.press('Escape');
+    await expect(searchDialog).not.toBeVisible();
   });
 });

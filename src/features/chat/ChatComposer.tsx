@@ -179,7 +179,7 @@ export function ChatComposer({
                             checked={isSelected}
                             disabled={isMaxReached}
                             onChange={() => handleToggleNote(note)}
-                            className="h-3.5 w-3.5 rounded border-rule text-accent accent-accent focus-visible:outline-2 focus-visible:outline-accent"
+                            className="h-3.5 w-3.5 rounded border-rule accent-ink focus-visible:outline-2 focus-visible:outline-accent"
                           />
                           <span className="shrink-0">{note.icon || '📄'}</span>
                           <span className="truncate">{note.title || 'Untitled'}</span>
@@ -200,7 +200,7 @@ export function ChatComposer({
               aria-checked={includeToday}
               checked={includeToday}
               onChange={(e) => setIncludeToday(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-rule text-accent accent-accent focus-visible:outline-2 focus-visible:outline-accent"
+              className="h-3.5 w-3.5 rounded border-rule accent-ink focus-visible:outline-2 focus-visible:outline-accent"
             />
             <span>Include today's plan</span>
           </label>

@@ -82,7 +82,7 @@ export function Sidebar({ onNavigate, className = '' }: SidebarProps) {
           </Link>
         ))}
 
-        <SidebarPages />
+        <SidebarPages onNavigate={onNavigate} />
       </nav>
 
       {/* User Footer */}

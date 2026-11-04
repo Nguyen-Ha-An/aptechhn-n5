@@ -262,7 +262,7 @@ function MarkdownContent({ content }: { content: string }) {
               href={href}
               target="_blank"
               rel="noreferrer"
-              className="text-accent underline underline-offset-2 hover:opacity-80"
+              className="text-ink font-medium underline underline-offset-2 hover:opacity-80"
             >
               {children}
             </a>

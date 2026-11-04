@@ -18,6 +18,7 @@ import { Route as AppTodosRouteImport } from './routes/_app/todos'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat/index'
 import { Route as AppChatConversationIdRouteImport } from './routes/_app/chat/$conversationId'
 import { Route as AppNotesNoteIdRouteImport } from './routes/_app/notes/$noteId'
+import { Route as AppNotesTrashRouteImport } from './routes/_app/notes/trash'
 import { Route as AppProgressIndexRouteImport } from './routes/_app/progress/index'
 import { Route as AppProgressSessionsRouteImport } from './routes/_app/progress/sessions'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
@@ -67,6 +68,11 @@ const AppNotesNoteIdRoute = AppNotesNoteIdRouteImport.update({
   path: '/notes/$noteId',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotesTrashRoute = AppNotesTrashRouteImport.update({
+  id: '/notes/trash',
+  path: '/notes/trash',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProgressIndexRoute = AppProgressIndexRouteImport.update({
   id: '/progress/',
   path: '/progress/',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/todos': typeof AppTodosRoute
   '/chat/$conversationId': typeof AppChatConversationIdRoute
   '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/notes/trash': typeof AppNotesTrashRoute
   '/progress/sessions': typeof AppProgressSessionsRoute
   '/settings/import': typeof AppSettingsImportRoute
   '/chat/': typeof AppChatIndexRoute
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/chat/$conversationId': typeof AppChatConversationIdRoute
   '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/notes/trash': typeof AppNotesTrashRoute
   '/progress/sessions': typeof AppProgressSessionsRoute
   '/settings/import': typeof AppSettingsImportRoute
   '/chat': typeof AppChatIndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/chat/$conversationId': typeof AppChatConversationIdRoute
   '/_app/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/_app/notes/trash': typeof AppNotesTrashRoute
   '/_app/progress/sessions': typeof AppProgressSessionsRoute
   '/_app/settings/import': typeof AppSettingsImportRoute
   '/_app/chat/': typeof AppChatIndexRoute
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/todos'
     | '/chat/$conversationId'
     | '/notes/$noteId'
+    | '/notes/trash'
     | '/progress/sessions'
     | '/settings/import'
     | '/chat/'
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat/$conversationId'
     | '/notes/$noteId'
+    | '/notes/trash'
     | '/progress/sessions'
     | '/settings/import'
     | '/chat'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/chat/$conversationId'
     | '/_app/notes/$noteId'
+    | '/_app/notes/trash'
     | '/_app/progress/sessions'
     | '/_app/settings/import'
     | '/_app/chat/'
@@ -246,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNotesNoteIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notes/trash': {
+      id: '/_app/notes/trash'
+      path: '/notes/trash'
+      fullPath: '/notes/trash'
+      preLoaderRoute: typeof AppNotesTrashRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/progress/': {
       id: '/_app/progress/'
       path: '/progress'
@@ -296,6 +315,7 @@ interface AppRouteChildren {
   AppTodosRoute: typeof AppTodosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppNotesNoteIdRoute: typeof AppNotesNoteIdRoute
+  AppNotesTrashRoute: typeof AppNotesTrashRoute
   AppProgressSessionsRoute: typeof AppProgressSessionsRoute
   AppSettingsImportRoute: typeof AppSettingsImportRoute
   AppProgressIndexRoute: typeof AppProgressIndexRoute
@@ -308,6 +328,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTodosRoute: AppTodosRoute,
   AppIndexRoute: AppIndexRoute,
   AppNotesNoteIdRoute: AppNotesNoteIdRoute,
+  AppNotesTrashRoute: AppNotesTrashRoute,
   AppProgressSessionsRoute: AppProgressSessionsRoute,
   AppSettingsImportRoute: AppSettingsImportRoute,
   AppProgressIndexRoute: AppProgressIndexRoute,

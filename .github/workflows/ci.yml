@@ -82,7 +82,7 @@ jobs:
 
       - name: Setup environment and test configs
         run: |
-          eval $(supabase status -o env)
+          eval "$(supabase status -o env | grep -E '^[A-Z_]+=')"
           cat <<EOF > .env.local
           VITE_SUPABASE_URL=$API_URL
           VITE_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}
@@ -93,14 +93,20 @@ jobs:
         run: |
           supabase functions serve --env-file .env.functions &
           echo "Waiting for Edge Functions server to respond..."
+          READY=0
           for i in $(seq 1 60); do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/functions/v1/chat || true)
             if [ -n "$STATUS" ] && [ "$STATUS" != "000" ]; then
               echo "Edge Functions responding with HTTP $STATUS after ${i}s"
+              READY=1
               break
             fi
             sleep 1
           done
+          if [ "$READY" -ne 1 ]; then
+            echo "Edge Functions server failed to start within 60s"
+            exit 1
+          fi
 
       - name: Install Playwright Chromium
         run: bunx playwright install --with-deps chromium

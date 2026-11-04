@@ -102,7 +102,7 @@ export function ConversationList({ activeId, onSelect, className = '' }: Convers
     <div className={`flex flex-col h-full bg-paper ${className}`}>
       {/* Header with New chat action */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-rule shrink-0">
-        <span className="text-xs font-semibold uppercase tracking-wider text-muted">Chats</span>
+        <span className="text-xs font-semibold text-muted">Chats</span>
         <Button
           variant="secondary"
           size="sm"
@@ -123,7 +123,7 @@ export function ConversationList({ activeId, onSelect, className = '' }: Convers
               title="No chats yet"
               body="Start a chat to ask questions or make study plans."
               action={
-                <Button variant="primary" size="sm" onClick={handleStartNewChat}>
+                <Button variant="secondary" size="sm" onClick={handleStartNewChat}>
                   Start a chat
                 </Button>
               }

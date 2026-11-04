@@ -180,7 +180,7 @@ function LegacyImportPage() {
                 <h2 className="text-sm font-semibold text-ink">Items to Import</h2>
                 <div className="overflow-x-auto rounded-md border border-rule bg-surface">
                   <table className="w-full text-left text-sm text-ink">
-                    <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-muted">
+                    <thead className="border-b border-rule bg-paper text-xs font-semibold text-muted">
                       <tr>
                         <th className="px-4 py-2.5">Category</th>
                         <th className="px-4 py-2.5 text-right">Count</th>
@@ -229,7 +229,7 @@ function LegacyImportPage() {
                   <h2 className="text-sm font-semibold text-ink">Skipped Categories</h2>
                   <div className="overflow-x-auto rounded-md border border-rule bg-surface">
                     <table className="w-full text-left text-sm text-ink">
-                      <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-muted">
+                      <thead className="border-b border-rule bg-paper text-xs font-semibold text-muted">
                         <tr>
                           <th className="px-4 py-2.5">Category</th>
                           <th className="px-4 py-2.5 text-right">Count</th>

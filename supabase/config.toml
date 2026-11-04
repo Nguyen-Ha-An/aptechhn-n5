@@ -22,8 +22,12 @@ additional_redirect_urls = [
 jwt_expiry = 3600
 enable_signup = true
 
+[auth.rate_limit]
+email_sent = 100
+token_verifications = 150
+sign_in_sign_ups = 100
+
 [auth.email]
-enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 otp_length = 6
