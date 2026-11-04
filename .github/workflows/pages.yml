@@ -33,9 +33,6 @@ jobs:
 
       - name: Build web application
         run: bun run build
-        env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || 'https://bdiwugbntvyqandlwtvd.supabase.co' }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY || secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
