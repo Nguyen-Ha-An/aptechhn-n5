@@ -3,13 +3,15 @@ import * as RadixDialog from '@radix-ui/react-dialog';
 import { List } from '@phosphor-icons/react';
 import { Sidebar } from './Sidebar';
 import { IconButton } from '@/components/ui';
+import { FocusProvider, useFocus } from '@/features/focus/useFocusSession';
 
 export interface AppShellProps {
   children?: ReactNode;
 }
 
-export function AppShell({ children }: AppShellProps) {
+function AppShellInner({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { zenMode } = useFocus();
 
   return (
     <div className="flex min-h-screen w-full bg-paper text-ink">
@@ -22,9 +24,11 @@ export function AppShell({ children }: AppShellProps) {
       </a>
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex shrink-0">
-        <Sidebar />
-      </div>
+      {!zenMode && (
+        <div className="hidden md:flex shrink-0">
+          <Sidebar />
+        </div>
+      )}
 
       {/* Mobile Drawer */}
       <RadixDialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -43,27 +47,39 @@ export function AppShell({ children }: AppShellProps) {
       {/* Main Column & Mobile Header */}
       <div className="flex flex-1 flex-col min-w-0">
         {/* Mobile Top Bar */}
-        <header className="flex h-14 md:hidden items-center justify-between border-b border-rule bg-surface px-4 shrink-0">
-          <div className="flex items-center gap-3">
-            <IconButton
-              label="Open navigation menu"
-              variant="ghost"
-              onClick={() => setMobileOpen(true)}
-            >
-              <List size={22} />
-            </IconButton>
-            <span className="font-serif text-lg font-bold text-ink">FocusLearn</span>
-          </div>
-        </header>
+        {!zenMode && (
+          <header className="flex h-14 md:hidden items-center justify-between border-b border-rule bg-surface px-4 shrink-0">
+            <div className="flex items-center gap-3">
+              <IconButton
+                label="Open navigation menu"
+                variant="ghost"
+                onClick={() => setMobileOpen(true)}
+              >
+                <List size={22} />
+              </IconButton>
+              <span className="font-serif text-lg font-bold text-ink">FocusLearn</span>
+            </div>
+          </header>
+        )}
 
         {/* Reading Column */}
         <main
           id="main"
-          className="mx-auto w-full max-w-[720px] flex-1 px-5 py-6 md:py-12"
+          className={`mx-auto w-full flex-1 px-5 py-6 md:py-12 ${
+            zenMode ? 'max-w-[800px]' : 'max-w-[720px]'
+          }`}
         >
           {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export function AppShell({ children }: AppShellProps) {
+  return (
+    <FocusProvider>
+      <AppShellInner>{children}</AppShellInner>
+    </FocusProvider>
   );
 }
