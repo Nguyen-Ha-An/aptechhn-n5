@@ -14,8 +14,18 @@ async function openSidebarIfNeeded(page: Page) {
     const dialog = page.getByRole('dialog', { name: 'Navigation' });
     if (!(await dialog.isVisible())) {
       await menuBtn.click();
+      await expect(dialog).toBeVisible();
     }
   }
+}
+
+/**
+ * Click a top-level navigation link inside the Main sidebar.
+ */
+async function clickSidebarNav(page: Page, label: string) {
+  await openSidebarIfNeeded(page);
+  const mainNav = page.getByRole('navigation', { name: 'Main' });
+  await mainNav.getByRole('link', { name: label, exact: true }).click();
 }
 
 /**
@@ -73,9 +83,8 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // ------------------------------------------------------------------------
     // 2. Add, complete, and undo todo
     // ------------------------------------------------------------------------
-    await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: 'Todos' }).click();
-    await expect(page.getByRole('heading', { name: 'Todos' })).toBeVisible();
+    await clickSidebarNav(page, 'Todos');
+    await expect(page.getByRole('heading', { name: 'Todos', exact: true })).toBeVisible();
 
     const todoTitle = 'Study Chapter 5 Calculus';
     const addTodoInput = page.getByLabel('Add a todo');
@@ -134,7 +143,8 @@ test.describe('FocusLearn End-to-End Suite', () => {
 
     // Navigate to target page and rename it
     await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: targetTitle }).first().click();
+    const pagesNav = page.getByRole('navigation', { name: 'Pages' });
+    await pagesNav.getByRole('link', { name: targetTitle, exact: true }).click();
     await expect(pageTitleInput).toHaveValue(targetTitle);
     const renamedTargetTitle = 'Advanced Calculus Derivatives';
     await pageTitleInput.fill(renamedTargetTitle);
@@ -142,11 +152,11 @@ test.describe('FocusLearn End-to-End Suite', () => {
 
     // Return to subpage and click the link: should still navigate to the renamed target
     await openSidebarIfNeeded(page);
-    const expandBtn = page.getByRole('button', { name: new RegExp(`Expand ${renamedTargetTitle}`, 'i') });
+    const expandBtn = pagesNav.getByRole('button', { name: `Expand ${renamedTargetTitle}`, exact: true });
     if (await expandBtn.isVisible()) {
       await expandBtn.click();
     }
-    await page.getByRole('link', { name: subpageTitle }).first().click();
+    await pagesNav.getByRole('link', { name: subpageTitle, exact: true }).click();
     await expect(pageTitleInput).toHaveValue(subpageTitle);
 
     const pageLinkNode = page.locator('a[data-page-id]').first();
@@ -157,8 +167,7 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // ------------------------------------------------------------------------
     // 4. Focus session in open mode, distraction, reload, end, rate, save
     // ------------------------------------------------------------------------
-    await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: 'Focus' }).click();
+    await clickSidebarNav(page, 'Focus');
 
     // Use Open mode (since minimum timed mode is 5 minutes)
     const openModeRadio = page.getByRole('radio', { name: 'Open' });
@@ -174,7 +183,7 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // Log a distraction
     const logDistractionBtn = page.getByRole('button', { name: /log distraction/i });
     await logDistractionBtn.click();
-    const phoneCategoryBtn = page.getByRole('button', { name: 'Phone' });
+    const phoneCategoryBtn = page.getByRole('button', { name: 'Phone', exact: true });
     await phoneCategoryBtn.click();
     const saveDistractionBtn = page.getByRole('button', { name: 'Log', exact: true });
     await saveDistractionBtn.click();
@@ -200,18 +209,16 @@ test.describe('FocusLearn End-to-End Suite', () => {
     await expect(page.getByText(/first steps/i)).toBeVisible();
 
     // Navigate to sessions list and verify it is listed
-    await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: 'Progress' }).click();
+    await clickSidebarNav(page, 'Progress');
     const allSessionsLink = page.getByRole('link', { name: /all sessions/i });
     await expect(allSessionsLink).toBeVisible();
     await allSessionsLink.click();
-    await expect(page.getByRole('heading', { name: 'Sessions' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sessions', exact: true })).toBeVisible();
 
     // ------------------------------------------------------------------------
     // 5. Chat with fake model streams "Echo:"
     // ------------------------------------------------------------------------
-    await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: 'Chat' }).click();
+    await clickSidebarNav(page, 'Chat');
     const newChatBtn = page.getByRole('button', { name: 'New chat' }).first();
     await newChatBtn.click();
 
@@ -226,9 +233,8 @@ test.describe('FocusLearn End-to-End Suite', () => {
     // ------------------------------------------------------------------------
     // 6. Theme toggle
     // ------------------------------------------------------------------------
-    await openSidebarIfNeeded(page);
-    await page.getByRole('link', { name: 'Settings' }).click();
-    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    await clickSidebarNav(page, 'Settings');
+    await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
 
     // Switch to dark theme
     const darkThemeRadio = page.getByRole('radio', { name: 'Dark' });
@@ -282,6 +288,9 @@ test.describe('FocusLearn End-to-End Suite', () => {
     await page.keyboard.press('Tab');
     const skipLink = page.getByRole('link', { name: /skip to content/i });
     await expect(skipLink).toBeFocused();
+
+    // Blur skipLink so it returns to sr-only and does not overlay top-left mobile menu trigger
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
 
     // Open search pages dialog (opening mobile drawer first if on mobile)
     await openSidebarIfNeeded(page);
