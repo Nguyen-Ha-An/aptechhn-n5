@@ -53,7 +53,12 @@ export interface FocusPageProps {
 
 export function FocusPage({ initialTodoId }: FocusPageProps) {
   const { data: profile } = useProfile();
-  const { data: openTodos = [], isLoading: todosLoading } = useOpenTodos();
+  const {
+    data: openTodos = [],
+    isLoading: todosLoading,
+    isError: todosError,
+    refetch: refetchTodos,
+  } = useOpenTodos();
   const saveSessionMutation = useSaveSession();
 
   const {
@@ -111,6 +116,16 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
     };
   }, [setZenMode]);
 
+  // Reset rating and reflection when phase returns to idle
+  const [prevPhaseForReset, setPrevPhaseForReset] = useState(state.phase);
+  if (prevPhaseForReset !== state.phase) {
+    setPrevPhaseForReset(state.phase);
+    if (state.phase === 'idle') {
+      setRating(null);
+      setReflection('');
+    }
+  }
+
   // Polite screen-reader announcements on phase changes only
   useEffect(() => {
     const prev = prevPhaseRef.current;
@@ -141,6 +156,11 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignored while typing in inputs, textareas, selects
       if (isTyping(e)) {
+        return;
+      }
+
+      // Guard against modifier keys so Cmd+Z, Ctrl+Z, Cmd+D etc. do not fire shortcuts
+      if (e.metaKey || e.ctrlKey || e.altKey) {
         return;
       }
 
@@ -228,6 +248,8 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
         reflection: reflection.trim() || null,
       });
       reset();
+      setRating(null);
+      setReflection('');
       toast.success('Session saved');
     } catch (err) {
       console.error('Failed to save session:', err);
@@ -379,6 +401,18 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
             </select>
             {todosLoading && (
               <p className="mt-1 text-xs text-muted">Loading open todos...</p>
+            )}
+            {todosError && (
+              <div className="mt-1.5 flex items-center gap-2 text-xs text-danger">
+                <span>Failed to load open todos.</span>
+                <button
+                  type="button"
+                  onClick={() => void refetchTodos()}
+                  className="underline font-medium hover:text-ink cursor-pointer"
+                >
+                  Retry
+                </button>
+              </div>
             )}
           </div>
 
@@ -637,8 +671,8 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
       {/* Phase 3: BREAK STATE */}
       {state.phase === 'break' && (
         <div className="w-full flex flex-col items-center justify-center py-8 md:py-16 space-y-6">
-          <div className="flex items-center gap-2 text-accent">
-            <Coffee size={24} weight="bold" aria-hidden="true" />
+          <div className="flex items-center gap-2 text-ink">
+            <Coffee size={24} weight="bold" className="text-muted" aria-hidden="true" />
             <h2 className="font-serif text-2xl font-bold text-ink">
               {state.breakKind === 'long' ? 'Long break' : 'Short break'}
             </h2>
@@ -699,7 +733,7 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
       {state.phase === 'finished' && (
         <div className="w-full max-w-md mx-auto space-y-6 py-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-surface border border-rule text-accent mb-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-surface border border-rule text-muted mb-2">
               <CheckCircle size={28} weight="fill" aria-hidden="true" />
             </div>
             <h2 className="font-serif text-2xl font-bold text-ink">
@@ -813,6 +847,8 @@ export function FocusPage({ initialTodoId }: FocusPageProps) {
             variant="danger"
             onConfirm={() => {
               reset();
+              setRating(null);
+              setReflection('');
               setDiscardDialogOpen(false);
             }}
           />

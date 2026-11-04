@@ -221,6 +221,26 @@ describe('Focus Feature Integration', () => {
     expect(screen.queryByLabelText('Exit Zen mode (Esc)')).not.toBeInTheDocument();
   });
 
+  it('shortcuts do not fire when modifier keys (meta, ctrl, alt) are held', async () => {
+    const user = userEvent.setup();
+    renderFocusPage();
+
+    await user.click(screen.getByRole('button', { name: 'Start focus session' }));
+    expect(screen.getByText('Focusing')).toBeInTheDocument();
+
+    // Cmd+Z should NOT enter Zen mode
+    fireEvent.keyDown(window, { key: 'z', metaKey: true });
+    expect(screen.queryByLabelText('Exit Zen mode (Esc)')).not.toBeInTheDocument();
+
+    // Ctrl+Space should NOT pause
+    fireEvent.keyDown(window, { code: 'Space', ctrlKey: true });
+    expect(screen.getByText('Focusing')).toBeInTheDocument();
+
+    // Alt+D should NOT open distraction popover
+    fireEvent.keyDown(window, { key: 'd', altKey: true });
+    expect(screen.queryByText('Note what pulled your attention away.')).not.toBeInTheDocument();
+  });
+
   it('shortcuts do not fire while typing in reflection or inputs', async () => {
     const user = userEvent.setup();
 
@@ -356,6 +376,90 @@ describe('Focus Feature Integration', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Start focus session' })).toBeInTheDocument();
     });
+
+    // Start another session and end it to verify rating and reflection were reset
+    await user.click(screen.getByText('Trigger Start'));
+    await user.click(screen.getByText('Trigger End'));
+
+    const rating5AfterReset = screen.getByRole('radio', { name: 'Rating 5 of 5' });
+    expect(rating5AfterReset).toHaveAttribute('aria-checked', 'false');
+    const reflectionAfterReset = screen.getByLabelText('Reflection (optional)');
+    expect(reflectionAfterReset).toHaveValue('');
+  });
+
+  it('discarding session resets machine state and clears rating and reflection', async () => {
+    const user = userEvent.setup();
+
+    function TestComponent() {
+      const { startSession, endFocus } = useFocus();
+      return (
+        <div>
+          <button onClick={() => startSession({ mode: 'timed', plannedMinutes: 25 })}>
+            Trigger Start
+          </button>
+          <button onClick={() => endFocus()}>Trigger End</button>
+          <FocusPage />
+        </div>
+      );
+    }
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FocusProvider>
+          <TestComponent />
+        </FocusProvider>
+      </QueryClientProvider>
+    );
+
+    await user.click(screen.getByText('Trigger Start'));
+    await user.click(screen.getByText('Trigger End'));
+
+    // Set rating and reflection
+    await user.click(screen.getByRole('radio', { name: 'Rating 3 of 5' }));
+    await user.type(screen.getByLabelText('Reflection (optional)'), 'Distracted by noise');
+
+    // Click Discard
+    await user.click(screen.getByRole('button', { name: 'Discard' }));
+
+    // Confirm discard
+    const confirmDiscardBtn = screen.getByRole('button', { name: 'Discard' });
+    await user.click(confirmDiscardBtn);
+
+    // Returns to idle
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Start focus session' })).toBeInTheDocument();
+    });
+
+    // Start and end another session: fields should be clean
+    await user.click(screen.getByText('Trigger Start'));
+    await user.click(screen.getByText('Trigger End'));
+
+    expect(screen.getByRole('radio', { name: 'Rating 3 of 5' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByLabelText('Reflection (optional)')).toHaveValue('');
+  });
+
+  it('displays error and retry button when open todos fail to load', async () => {
+    const mockRefetch = vi.fn();
+    // Temporarily spy on useOpenTodos to return error
+    const queries = await import('./queries');
+    const spy = vi.spyOn(queries, 'useOpenTodos').mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: true,
+      refetch: mockRefetch,
+    } as unknown as ReturnType<typeof queries.useOpenTodos>);
+
+    const user = userEvent.setup();
+    renderFocusPage();
+
+    expect(screen.getByText('Failed to load open todos.')).toBeInTheDocument();
+    const retryBtn = screen.getByRole('button', { name: 'Retry' });
+    expect(retryBtn).toBeInTheDocument();
+
+    await user.click(retryBtn);
+    expect(mockRefetch).toHaveBeenCalledTimes(1);
+
+    spy.mockRestore();
   });
 
   it('renders LiveSessionRow when active and hides when idle', async () => {

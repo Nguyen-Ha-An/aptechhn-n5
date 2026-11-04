@@ -109,7 +109,7 @@ const FocusContext = createContext<FocusContextValue | null>(null);
 
 function FocusProviderInner({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(focusReducer, undefined, loadPersistedState);
-  const [now, setNow] = useState<number>(0);
+  const [now, setNow] = useState<number>(() => Date.now());
   const [zenMode, setZenMode] = useState<boolean>(false);
   const { data: profile } = useProfile();
 
