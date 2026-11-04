@@ -24,6 +24,6 @@ export default defineConfig({
     },
     setupFiles: ['src/test/setup.ts'],
     globals: false,
-    exclude: [...configDefaults.exclude, '**/.worktrees/**'],
+    exclude: [...configDefaults.exclude, '**/.worktrees/**', 'e2e/**'],
   },
 });

@@ -6,14 +6,14 @@
 @import '@fontsource/be-vietnam-pro/600.css';
 
 @theme {
-  --color-paper: #fbfaf7;
-  --color-surface: #f3f1ec;
-  --color-ink: #1f1e1c;
-  --color-muted: #6b675f;
-  --color-rule: #e4e0d7;
-  --color-accent: #b5432f;
-  --color-accent-ink: #ffffff;
-  --color-danger: #9f2d20;
+  --color-paper: #FBFAF7;
+  --color-surface: #F3F1EC;
+  --color-ink: #1F1E1C;
+  --color-muted: #6B675F;
+  --color-rule: #E4E0D7;
+  --color-accent: #B5432F;
+  --color-accent-ink: #FFFFFF;
+  --color-danger: #9F2D20;
 
   --font-serif: 'Source Serif 4 Variable', Georgia, serif;
   --font-sans: 'Be Vietnam Pro', system-ui, sans-serif;
@@ -21,13 +21,13 @@
 
 [data-theme='dark'] {
   --color-paper: #191817;
-  --color-surface: #22211f;
-  --color-ink: #eceae4;
-  --color-muted: #a8a398;
-  --color-rule: #34322e;
-  --color-accent: #e07a5f;
+  --color-surface: #22211F;
+  --color-ink: #ECEAE4;
+  --color-muted: #A8A398;
+  --color-rule: #34322E;
+  --color-accent: #E07A5F;
   --color-accent-ink: #191817;
-  --color-danger: #f08a7a;
+  --color-danger: #F08A7A;
 }
 
 body {

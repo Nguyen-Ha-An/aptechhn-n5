@@ -9,6 +9,8 @@
     "preview": "bunx --bun vite preview",
     "test": "bunx --bun vitest run",
     "test:watch": "bunx --bun vitest",
+    "test:e2e": "bunx playwright test",
+    "check:contrast": "bun scripts/contrast.ts",
     "typecheck": "bunx --bun tsc -b --noEmit",
     "lint": "bunx --bun eslint .",
     "format": "bunx --bun prettier --write ."
@@ -31,6 +33,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.3.4",
     "@tanstack/router-plugin": "^1.168.48",
     "@testing-library/jest-dom": "^7.0.1",
