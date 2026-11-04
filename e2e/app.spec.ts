@@ -9,7 +9,7 @@ import { getLatestOtpCode } from './helpers/mail';
  * Sign in using email OTP code flow.
  */
 async function signInWithEmailOtp(page: Page, email: string) {
-  await page.goto('./login');
+  await page.goto('./#/login');
 
   const emailInput = page.getByRole('textbox', { name: /email/i });
   await emailInput.fill(email);
@@ -230,15 +230,16 @@ test.describe('FocusLearn End-to-End Suite', () => {
     await signInWithEmailOtp(page, `mobile-check-${Date.now()}@example.com`);
 
     const routes = [
-      './',
-      './todos',
-      './focus',
-      './chat',
-      './progress',
-      './progress/sessions',
-      './settings',
-      './settings/import',
-      './login',
+      './#/',
+      './#/todos',
+      './#/focus',
+      './#/chat',
+      './#/progress',
+      './#/progress/sessions',
+      './#/settings',
+      './#/settings/import',
+      './#/notes/trash',
+      './#/login',
     ];
 
     for (const route of routes) {
@@ -252,7 +253,9 @@ test.describe('FocusLearn End-to-End Suite', () => {
   // Keyboard accessibility: Skip link and Escape key for dialogs
   // --------------------------------------------------------------------------
   test('keyboard accessibility: Tab reaches skip link first and Escape closes dialogs', async ({ page }) => {
-    await page.goto('./');
+    // Authenticate first to mount AppShell with skip link
+    await signInWithEmailOtp(page, `keyboard-check-${Date.now()}@example.com`);
+    await page.goto('./#/');
 
     // Tab reaches "Skip to content" link first
     await page.keyboard.press('Tab');

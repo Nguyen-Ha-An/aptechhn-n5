@@ -78,21 +78,29 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Start Supabase
-        run: supabase start
+        run: supabase start -x realtime,storage-api,imgproxy,studio,logflare,vector,supavisor
 
       - name: Setup environment and test configs
         run: |
           eval $(supabase status -o env)
           cat <<EOF > .env.local
           VITE_SUPABASE_URL=$API_URL
-          VITE_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY
+          VITE_SUPABASE_PUBLISHABLE_KEY=${PUBLISHABLE_KEY:-$ANON_KEY}
           EOF
           echo "CHAT_FAKE_MODEL=1" > .env.functions
 
       - name: Serve Edge Functions (background)
         run: |
           supabase functions serve --env-file .env.functions &
-          sleep 3
+          echo "Waiting for Edge Functions server to respond..."
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:54321/functions/v1/chat || true)
+            if [ -n "$STATUS" ] && [ "$STATUS" != "000" ]; then
+              echo "Edge Functions responding with HTTP $STATUS after ${i}s"
+              break
+            fi
+            sleep 1
+          done
 
       - name: Install Playwright Chromium
         run: bunx playwright install --with-deps chromium
