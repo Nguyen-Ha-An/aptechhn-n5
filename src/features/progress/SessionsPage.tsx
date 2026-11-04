@@ -283,23 +283,50 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
   const [rating, setRating] = useState<number | null>(session.focus_rating);
   const [reflection, setReflection] = useState<string>(session.reflection || '');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [dialogError, setDialogError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const updateMutation = useUpdateSession();
   const deleteMutation = useDeleteSession();
 
+  const extractError = (err: unknown, fallback: string): string => {
+    if (err instanceof Error) return err.message;
+    if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+      return (err as { message: string }).message;
+    }
+    return fallback;
+  };
+
   const handleSave = async () => {
-    await updateMutation.mutateAsync({
-      sessionId: session.id,
-      focus_rating: rating,
-      reflection: reflection.trim() || null,
-    });
-    onClose();
+    try {
+      setDialogError(null);
+      setIsSaving(true);
+      await updateMutation.mutateAsync({
+        sessionId: session.id,
+        focus_rating: rating,
+        reflection: reflection.trim() || null,
+      });
+      onClose();
+    } catch (err) {
+      setDialogError(extractError(err, 'Failed to save changes.'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleDelete = async () => {
-    await deleteMutation.mutateAsync(session.id);
-    setShowDeleteConfirm(false);
-    onClose();
+    try {
+      setDialogError(null);
+      setIsDeleting(true);
+      await deleteMutation.mutateAsync(session.id);
+      setShowDeleteConfirm(false);
+      onClose();
+    } catch (err) {
+      setDialogError(extractError(err, 'Failed to delete session.'));
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -313,6 +340,15 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
         description={formatLongDate(session.started_at, tz)}
       >
         <div className="space-y-4 pt-1">
+          {dialogError && (
+            <div
+              role="alert"
+              className="p-3 rounded-[6px] bg-surface border border-danger/40 text-xs text-danger"
+            >
+              {dialogError}
+            </div>
+          )}
+
           {/* Session metadata */}
           <div className="grid grid-cols-2 gap-3 text-xs border-b border-rule pb-3">
             <div>
@@ -351,9 +387,9 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
 
           {/* Distractions list */}
           <div className="border-b border-rule pb-3">
-            <h4 className="text-xs font-semibold text-ink uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold text-ink mb-2">
               Distractions ({session.distractions.length})
-            </h4>
+            </h3>
             {session.distractions.length === 0 ? (
               <p className="text-xs text-muted">No distractions recorded.</p>
             ) : (
@@ -393,9 +429,9 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
                   role="radio"
                   aria-checked={rating === val}
                   onClick={() => setRating(rating === val ? null : val)}
-                  className={`h-9 w-9 rounded-[6px] border text-xs font-medium cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
+                  className={`min-h-[44px] min-w-[44px] md:h-9 md:w-9 rounded-[6px] border text-xs font-medium cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-accent flex items-center justify-center ${
                     rating === val
-                      ? 'border-accent bg-accent text-accent-ink font-semibold'
+                      ? 'border-ink bg-ink text-paper font-semibold'
                       : 'border-rule bg-surface text-ink hover:border-ink/40'
                   }`}
                 >
@@ -406,7 +442,7 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
                 <button
                   type="button"
                   onClick={() => setRating(null)}
-                  className="text-xs text-muted hover:text-ink ml-2 cursor-pointer underline"
+                  className="min-h-[44px] md:min-h-0 px-2 text-xs text-muted hover:text-ink cursor-pointer underline flex items-center"
                 >
                   Clear
                 </button>
@@ -429,18 +465,24 @@ function SessionEditDialog({ session, tz, onClose }: SessionEditDialogProps) {
             <Button
               variant="danger"
               size="md"
+              disabled={isSaving || isDeleting}
               onClick={() => setShowDeleteConfirm(true)}
             >
               Delete session
             </Button>
             <div className="flex items-center gap-2">
-              <Button variant="secondary" size="md" onClick={onClose}>
+              <Button
+                variant="secondary"
+                size="md"
+                disabled={isSaving || isDeleting}
+                onClick={onClose}
+              >
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 size="md"
-                loading={updateMutation.isPending}
+                loading={isSaving}
                 onClick={handleSave}
               >
                 Save changes

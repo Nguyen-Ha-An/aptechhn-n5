@@ -138,6 +138,46 @@ describe('ProgressPage', () => {
     expect(startBtn).toHaveAttribute('href', '/focus');
   });
 
+  it('renders empty state when user stats record is null', async () => {
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'user_stats') {
+        return {
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: null, error: null }),
+            }),
+          }),
+        } as never;
+      }
+      if (table === 'focus_sessions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () => ({
+                gte: async () => ({ data: [], error: null }),
+              }),
+            }),
+          }),
+        } as never;
+      }
+      if (table === 'user_achievements') {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: async () => ({ data: [], error: null }),
+            }),
+          }),
+        } as never;
+      }
+      return {} as never;
+    });
+
+    renderProgressRoute();
+
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Progress');
+    expect(await screen.findByText('No sessions yet')).toBeInTheDocument();
+  });
+
   it('renders summary line, charts, and achievements when user has session stats', async () => {
     vi.mocked(supabase.from).mockImplementation((table: string) => {
       if (table === 'user_stats') {

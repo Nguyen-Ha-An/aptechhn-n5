@@ -259,13 +259,53 @@ describe('SessionsPage', () => {
 
     // Click rating button "5"
     const rating5Btn = screen.getByRole('radio', { name: '5' });
+    expect(rating5Btn).toHaveClass('min-h-[44px]');
+    expect(rating5Btn).toHaveClass('min-w-[44px]');
     await user.click(rating5Btn);
+    expect(rating5Btn).toHaveClass('bg-ink');
+    expect(rating5Btn).toHaveClass('text-paper');
 
     // Click "Save changes"
     const saveBtn = screen.getByRole('button', { name: 'Save changes' });
     await user.click(saveBtn);
 
     expect(updateMock).toHaveBeenCalled();
+  });
+
+  it('displays error alert when session save fails', async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === 'focus_sessions') {
+        return {
+          select: () => ({
+            eq: () => ({
+              order: () => ({
+                gte: async () => ({ data: mockSessions, error: null }),
+              }),
+            }),
+          }),
+          update: () => ({
+            eq: () => ({
+              select: () => ({
+                single: async () => ({ data: null, error: { message: 'Failed to update session record' } }),
+              }),
+            }),
+          }),
+        } as never;
+      }
+      return {} as never;
+    });
+
+    renderSessionsRoute();
+
+    const sessionRow = await screen.findByText('Calculus Assignment');
+    await user.click(sessionRow);
+
+    const saveBtn = await screen.findByRole('button', { name: 'Save changes' });
+    await user.click(saveBtn);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Failed to update session record');
   });
 
   it('opens delete confirm dialog and deletes session on confirmation', async () => {

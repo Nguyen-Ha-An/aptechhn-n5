@@ -24,7 +24,7 @@ export function HBarList({
 
   return (
     <div className={`w-full space-y-3 ${className}`.trim()}>
-      <ul className="space-y-3" aria-label={ariaLabel}>
+      <ul className="space-y-3" aria-hidden="true">
         {data.map((item, idx) => {
           const percentage = Math.min(100, Math.round((item.value / maxValue) * 100));
 

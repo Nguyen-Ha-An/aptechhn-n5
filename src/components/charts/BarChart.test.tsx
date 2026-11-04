@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { BarChart } from './BarChart';
+import { HBarList } from './HBarList';
 
 describe('BarChart component', () => {
   const sampleData = [
@@ -63,5 +64,23 @@ describe('BarChart component', () => {
     // Other bars should use ink fill
     const inkRects = Array.from(rects).filter((r) => r.getAttribute('fill') === 'var(--color-ink)');
     expect(inkRects).toHaveLength(2);
+  });
+
+  it('renders HBarList with aria-hidden on visual list and accessible table', () => {
+    const listData = [
+      { label: 'Social Media', value: 5 },
+      { label: 'Phone', value: 3 },
+    ];
+
+    const { container } = render(
+      <HBarList data={listData} ariaLabel="Distractions by category" />,
+    );
+
+    const ul = container.querySelector('ul');
+    expect(ul).toHaveAttribute('aria-hidden', 'true');
+
+    const table = screen.getByRole('table', { hidden: true });
+    expect(table).toHaveClass('sr-only');
+    expect(screen.getByText('Distractions by category', { selector: 'caption' })).toBeInTheDocument();
   });
 });

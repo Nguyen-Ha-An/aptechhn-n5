@@ -139,7 +139,7 @@ export function ProgressPage() {
         </div>
       )}
 
-      {!isLoading && !hasError && stats && stats.sessions_count === 0 && (
+      {!isLoading && !hasError && (!stats || stats.sessions_count === 0) && (
         <div className="py-8">
           <EmptyState
             title="No sessions yet"
