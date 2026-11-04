@@ -18,6 +18,7 @@ import { Route as AppTodosRouteImport } from './routes/_app/todos'
 import { Route as AppChatIndexRouteImport } from './routes/_app/chat/index'
 import { Route as AppNotesNoteIdRouteImport } from './routes/_app/notes/$noteId'
 import { Route as AppProgressIndexRouteImport } from './routes/_app/progress/index'
+import { Route as AppProgressSessionsRouteImport } from './routes/_app/progress/sessions'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 
 const AppRoute = AppRouteImport.update({
@@ -64,6 +65,11 @@ const AppProgressIndexRoute = AppProgressIndexRouteImport.update({
   path: '/progress/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppProgressSessionsRoute = AppProgressSessionsRouteImport.update({
+  id: '/progress/sessions',
+  path: '/progress/sessions',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
@@ -77,6 +83,7 @@ export interface FileRoutesByFullPath {
   '/focus': typeof AppFocusRoute
   '/todos': typeof AppTodosRoute
   '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/progress/sessions': typeof AppProgressSessionsRoute
   '/chat/': typeof AppChatIndexRoute
   '/progress/': typeof AppProgressIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/todos': typeof AppTodosRoute
   '/': typeof AppIndexRoute
   '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/progress/sessions': typeof AppProgressSessionsRoute
   '/chat': typeof AppChatIndexRoute
   '/progress': typeof AppProgressIndexRoute
   '/settings': typeof AppSettingsIndexRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/_app/todos': typeof AppTodosRoute
   '/_app/': typeof AppIndexRoute
   '/_app/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/_app/progress/sessions': typeof AppProgressSessionsRoute
   '/_app/chat/': typeof AppChatIndexRoute
   '/_app/progress/': typeof AppProgressIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/focus'
     | '/todos'
     | '/notes/$noteId'
+    | '/progress/sessions'
     | '/chat/'
     | '/progress/'
     | '/settings/'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/todos'
     | '/'
     | '/notes/$noteId'
+    | '/progress/sessions'
     | '/chat'
     | '/progress'
     | '/settings'
@@ -135,6 +146,7 @@ export interface FileRouteTypes {
     | '/_app/todos'
     | '/_app/'
     | '/_app/notes/$noteId'
+    | '/_app/progress/sessions'
     | '/_app/chat/'
     | '/_app/progress/'
     | '/_app/settings/'
@@ -210,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgressIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/progress/sessions': {
+      id: '/_app/progress/sessions'
+      path: '/progress/sessions'
+      fullPath: '/progress/sessions'
+      preLoaderRoute: typeof AppProgressSessionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
@@ -237,6 +256,7 @@ interface AppRouteChildren {
   AppTodosRoute: typeof AppTodosRoute
   AppIndexRoute: typeof AppIndexRoute
   AppNotesNoteIdRoute: typeof AppNotesNoteIdRoute
+  AppProgressSessionsRoute: typeof AppProgressSessionsRoute
   AppProgressIndexRoute: typeof AppProgressIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
 }
@@ -247,6 +267,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppTodosRoute: AppTodosRoute,
   AppIndexRoute: AppIndexRoute,
   AppNotesNoteIdRoute: AppNotesNoteIdRoute,
+  AppProgressSessionsRoute: AppProgressSessionsRoute,
   AppProgressIndexRoute: AppProgressIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
 }
