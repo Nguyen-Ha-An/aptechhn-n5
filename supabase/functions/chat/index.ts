@@ -6,6 +6,7 @@ import {
   formatGeminiContents,
   deriveConversationTitle,
   encodeSSE,
+  getCorsHeaders,
 } from './lib.ts';
 
 declare const Deno: {
@@ -15,26 +16,8 @@ declare const Deno: {
   serve: (handler: (req: Request) => Promise<Response> | Response) => void;
 };
 
-function getCorsHeaders(req: Request): Record<string, string> {
-  const allowed = (
-    Deno.env.get('ALLOWED_ORIGINS') ?? 'https://nguyen-ha-an.github.io,http://localhost:5173'
-  )
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const origin = req.headers.get('Origin') ?? '';
-  const matched = allowed.includes(origin) ? origin : allowed[0] ?? '*';
-
-  return {
-    'Access-Control-Allow-Origin': matched,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Max-Age': '86400',
-  };
-}
-
 Deno.serve(async (req: Request): Promise<Response> => {
-  const corsHeaders = getCorsHeaders(req);
+  const corsHeaders = getCorsHeaders(req, Deno.env.get('ALLOWED_ORIGINS'));
 
   // 1. OPTIONS -> 204
   if (req.method === 'OPTIONS') {
@@ -231,12 +214,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
         }
 
         // Insert user message then assistant message (user-scoped client)
-        await supabase.from('messages').insert({
+        const { error: userMsgErr } = await supabase.from('messages').insert({
           conversation_id: conversationId,
           user_id: user.id,
           role: 'user',
           content: message,
         });
+
+        if (userMsgErr) {
+          throw userMsgErr;
+        }
 
         const { data: assistantMsg, error: asstErr } = await supabase
           .from('messages')

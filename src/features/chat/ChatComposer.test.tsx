@@ -70,6 +70,23 @@ describe('ChatComposer', () => {
     expect(textarea).toHaveValue('Line 1\nLine 2');
   });
 
+  it('does not send on Enter while IME is composing', () => {
+    const onSend = vi.fn();
+    renderComposer({ onSend });
+
+    const textarea = screen.getByLabelText('Message');
+    // Simulate Enter with isComposing = true
+    const event = new KeyboardEvent('keydown', {
+      key: 'Enter',
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(event, 'isComposing', { value: true });
+    textarea.dispatchEvent(event);
+
+    expect(onSend).not.toHaveBeenCalled();
+  });
+
   it('disables Send button when text is empty', () => {
     renderComposer();
     const sendBtn = screen.getByRole('button', { name: 'Send' });
@@ -97,6 +114,10 @@ describe('ChatComposer', () => {
     const attachBtn = screen.getByRole('button', { name: /Attach pages/i });
     await user.click(attachBtn);
 
+    // Verify search input has associated label
+    const searchInput = screen.getByLabelText('Search pages');
+    expect(searchInput).toHaveAttribute('id', 'chat-note-search-input');
+
     const mathCheckbox = await screen.findByRole('checkbox', { name: /Math Formulas/i });
     await user.click(mathCheckbox);
 
@@ -117,6 +138,10 @@ describe('ChatComposer', () => {
 
     const attachBtn = screen.getByRole('button', { name: /Attach pages/i });
     await user.click(attachBtn);
+
+    // Verify search input has associated label
+    const searchInput = screen.getByLabelText('Search pages');
+    expect(searchInput).toHaveAttribute('id', 'chat-note-search-input');
 
     const mathCheckbox = await screen.findByRole('checkbox', { name: /Math Formulas/i });
     await user.click(mathCheckbox);

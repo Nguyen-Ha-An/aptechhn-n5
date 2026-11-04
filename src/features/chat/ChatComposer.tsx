@@ -27,7 +27,7 @@ export function ChatComposer({
   const { data: notes, isLoading: notesLoading } = useNotesForChat();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleSubmit();
     }
@@ -131,19 +131,28 @@ export function ChatComposer({
                 </div>
 
                 {/* Search */}
-                <div className="relative">
-                  <MagnifyingGlass
-                    size={14}
-                    className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
-                    aria-hidden="true"
-                  />
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search pages..."
-                    className="w-full rounded-[6px] border border-rule bg-surface py-1 pl-8 pr-2 text-xs text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent"
-                  />
+                <div>
+                  <label
+                    htmlFor="chat-note-search-input"
+                    className="block mb-1 text-xs font-medium text-ink"
+                  >
+                    Search pages
+                  </label>
+                  <div className="relative">
+                    <MagnifyingGlass
+                      size={14}
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted"
+                      aria-hidden="true"
+                    />
+                    <input
+                      id="chat-note-search-input"
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search pages..."
+                      className="w-full rounded-[6px] border border-rule bg-surface py-1 pl-8 pr-2 text-xs text-ink placeholder:text-muted focus-visible:outline-2 focus-visible:outline-accent"
+                    />
+                  </div>
                 </div>
 
                 {/* Note list */}

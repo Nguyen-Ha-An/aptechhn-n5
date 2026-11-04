@@ -36,6 +36,30 @@ export function encodeSSE(data: unknown): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 
+export function getCorsHeaders(
+  req: Request,
+  allowedOriginsStr = 'https://nguyen-ha-an.github.io,http://localhost:5173',
+): Record<string, string> {
+  const allowed = allowedOriginsStr
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const origin = req.headers.get('Origin') ?? '';
+  const matched = allowed.includes(origin) ? origin : '';
+
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Max-Age': '86400',
+  };
+
+  if (matched) {
+    headers['Access-Control-Allow-Origin'] = matched;
+  }
+
+  return headers;
+}
+
 export function buildSystemInstruction(params: SystemInstructionParams): string {
   const parts: string[] = [
     'You are a study assistant inside FocusLearn. Be concise and specific. Use Markdown.',

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   chatRequestSchema,
   encodeSSE,
+  getCorsHeaders,
   buildSystemInstruction,
   formatGeminiContents,
   deriveConversationTitle,
@@ -71,6 +72,30 @@ describe('encodeSSE', () => {
     expect(encodeSSE({ done: true, messageId: '123' })).toBe(
       'data: {"done":true,"messageId":"123"}\n\n',
     );
+  });
+});
+
+describe('getCorsHeaders', () => {
+  it('echoes matching origin when origin is in allowed list', () => {
+    const req = new Request('http://localhost/test', {
+      headers: { Origin: 'http://localhost:5173' },
+    });
+    const headers = getCorsHeaders(req);
+    expect(headers['Access-Control-Allow-Origin']).toBe('http://localhost:5173');
+  });
+
+  it('omits Access-Control-Allow-Origin and never falls back to wildcard when origin is not allowed', () => {
+    const req = new Request('http://localhost/test', {
+      headers: { Origin: 'https://evil-attacker.example.com' },
+    });
+    const headers = getCorsHeaders(req);
+    expect(headers['Access-Control-Allow-Origin']).toBeUndefined();
+  });
+
+  it('omits Access-Control-Allow-Origin when Origin header is absent', () => {
+    const req = new Request('http://localhost/test');
+    const headers = getCorsHeaders(req);
+    expect(headers['Access-Control-Allow-Origin']).toBeUndefined();
   });
 });
 
