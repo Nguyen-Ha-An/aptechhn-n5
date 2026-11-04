@@ -10,7 +10,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/features/auth';
 import { SidebarPages } from '@/features/notes/SidebarPages';
-import { LiveSessionSlot } from '@/features/focus/LiveSessionRow';
+import { LiveSessionRow } from '@/features/focus/LiveSessionRow';
 import { Button } from '@/components/ui';
 
 export interface SidebarProps {
@@ -66,7 +66,7 @@ export function Sidebar({ onNavigate, className = '' }: SidebarProps) {
 
       {/* Main Navigation */}
       <nav aria-label="Main" className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
-        <LiveSessionSlot />
+        <LiveSessionRow />
 
         {NAV_ITEMS.map(({ to, label, icon: Icon, exact }) => (
           <Link
