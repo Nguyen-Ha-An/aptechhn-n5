@@ -9,12 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as AppIndexRouteImport } from './routes/_app/index'
+import { Route as AppChatRouteImport } from './routes/_app/chat'
+import { Route as AppFocusRouteImport } from './routes/_app/focus'
+import { Route as AppTodosRouteImport } from './routes/_app/todos'
+import { Route as AppChatIndexRouteImport } from './routes/_app/chat/index'
+import { Route as AppNotesNoteIdRouteImport } from './routes/_app/notes/$noteId'
+import { Route as AppProgressIndexRouteImport } from './routes/_app/progress/index'
+import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -22,40 +29,129 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChatRoute = AppChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFocusRoute = AppFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTodosRoute = AppTodosRouteImport.update({
+  id: '/todos',
+  path: '/todos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppChatIndexRoute = AppChatIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppChatRoute,
+} as any)
+const AppNotesNoteIdRoute = AppNotesNoteIdRouteImport.update({
+  id: '/notes/$noteId',
+  path: '/notes/$noteId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProgressIndexRoute = AppProgressIndexRouteImport.update({
+  id: '/progress/',
+  path: '/progress/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
+  id: '/settings/',
+  path: '/settings/',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/chat': typeof AppChatRouteWithChildren
+  '/focus': typeof AppFocusRoute
+  '/todos': typeof AppTodosRoute
+  '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/chat/': typeof AppChatIndexRoute
+  '/progress/': typeof AppProgressIndexRoute
+  '/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/focus': typeof AppFocusRoute
+  '/todos': typeof AppTodosRoute
+  '/': typeof AppIndexRoute
+  '/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/chat': typeof AppChatIndexRoute
+  '/progress': typeof AppProgressIndexRoute
+  '/settings': typeof AppSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/chat': typeof AppChatRouteWithChildren
+  '/_app/focus': typeof AppFocusRoute
+  '/_app/todos': typeof AppTodosRoute
+  '/_app/': typeof AppIndexRoute
+  '/_app/notes/$noteId': typeof AppNotesNoteIdRoute
+  '/_app/chat/': typeof AppChatIndexRoute
+  '/_app/progress/': typeof AppProgressIndexRoute
+  '/_app/settings/': typeof AppSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/chat'
+    | '/focus'
+    | '/todos'
+    | '/notes/$noteId'
+    | '/chat/'
+    | '/progress/'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to:
+    | '/login'
+    | '/focus'
+    | '/todos'
+    | '/'
+    | '/notes/$noteId'
+    | '/chat'
+    | '/progress'
+    | '/settings'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/chat'
+    | '/_app/focus'
+    | '/_app/todos'
+    | '/_app/'
+    | '/_app/notes/$noteId'
+    | '/_app/chat/'
+    | '/_app/progress/'
+    | '/_app/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
+    '/_app': {
+      id: '/_app'
+      path: ''
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -65,11 +161,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/': {
+      id: '/_app/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/chat': {
+      id: '/_app/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AppChatRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/focus': {
+      id: '/_app/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof AppFocusRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/todos': {
+      id: '/_app/todos'
+      path: '/todos'
+      fullPath: '/todos'
+      preLoaderRoute: typeof AppTodosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/chat/': {
+      id: '/_app/chat/'
+      path: '/'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof AppChatIndexRouteImport
+      parentRoute: typeof AppChatRoute
+    }
+    '/_app/notes/$noteId': {
+      id: '/_app/notes/$noteId'
+      path: '/notes/$noteId'
+      fullPath: '/notes/$noteId'
+      preLoaderRoute: typeof AppNotesNoteIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/progress/': {
+      id: '/_app/progress/'
+      path: '/progress'
+      fullPath: '/progress/'
+      preLoaderRoute: typeof AppProgressIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/': {
+      id: '/_app/settings/'
+      path: '/settings'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppChatRouteChildren {
+  AppChatIndexRoute: typeof AppChatIndexRoute
+}
+
+const AppChatRouteChildren: AppChatRouteChildren = {
+  AppChatIndexRoute: AppChatIndexRoute,
+}
+
+const AppChatRouteWithChildren =
+  AppChatRoute._addFileChildren(AppChatRouteChildren)
+
+interface AppRouteChildren {
+  AppChatRoute: typeof AppChatRouteWithChildren
+  AppFocusRoute: typeof AppFocusRoute
+  AppTodosRoute: typeof AppTodosRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppNotesNoteIdRoute: typeof AppNotesNoteIdRoute
+  AppProgressIndexRoute: typeof AppProgressIndexRoute
+  AppSettingsIndexRoute: typeof AppSettingsIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppChatRoute: AppChatRouteWithChildren,
+  AppFocusRoute: AppFocusRoute,
+  AppTodosRoute: AppTodosRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppNotesNoteIdRoute: AppNotesNoteIdRoute,
+  AppProgressIndexRoute: AppProgressIndexRoute,
+  AppSettingsIndexRoute: AppSettingsIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
