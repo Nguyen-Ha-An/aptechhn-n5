@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+@import '@fontsource-variable/source-serif-4';
+@import '@fontsource/be-vietnam-pro/400.css';
+@import '@fontsource/be-vietnam-pro/500.css';
+@import '@fontsource/be-vietnam-pro/600.css';
+
+@theme {
+  --color-paper: #fbfaf7;
+  --color-surface: #f3f1ec;
+  --color-ink: #1f1e1c;
+  --color-muted: #6b675f;
+  --color-rule: #e4e0d7;
+  --color-accent: #b5432f;
+  --color-accent-ink: #ffffff;
+  --color-danger: #9f2d20;
+
+  --font-serif: 'Source Serif 4 Variable', Georgia, serif;
+  --font-sans: 'Be Vietnam Pro', system-ui, sans-serif;
+}
+
+[data-theme='dark'] {
+  --color-paper: #191817;
+  --color-surface: #22211f;
+  --color-ink: #eceae4;
+  --color-muted: #a8a398;
+  --color-rule: #34322e;
+  --color-accent: #e07a5f;
+  --color-accent-ink: #191817;
+  --color-danger: #f08a7a;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+a[href],
+button:not(:disabled),
+summary,
+select,
+label[for],
+[role='button'],
+[role='tab'],
+[role='switch'],
+[role='menuitem'],
+[role='option'],
+input[type='checkbox'],
+input[type='radio'] {
+  cursor: pointer;
+}
+
+:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
