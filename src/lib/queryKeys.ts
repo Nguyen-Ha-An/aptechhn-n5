@@ -1,6 +1,7 @@
 export const qk = {
   profile: ['profile'],
   todos: ['todos'],
+  openTodos: ['todos', 'open'],
   notesTree: ['notes', 'tree'],
   note: (id: string) => ['notes', id],
   recentNotes: ['notes', 'recent'],
