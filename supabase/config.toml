@@ -1,0 +1,48 @@
+project_id = "focuslearn"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173/aptechhn-n5/"
+additional_redirect_urls = [
+  "https://nguyen-ha-an.github.io/aptechhn-n5/",
+  "http://localhost:4173/aptechhn-n5/"
+]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.rate_limit]
+email_sent = 100
+token_verifications = 150
+sign_in_sign_ups = 100
+
+[auth.email]
+double_confirm_changes = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 3600
+
+[auth.email.template.magic_link]
+subject = "Your FocusLearn sign-in link"
+content_path = "./supabase/templates/magic_link.html"
+
+[mailpit]
+enabled = true
+port = 54324
+
+[functions.chat]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true

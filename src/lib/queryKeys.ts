@@ -1,0 +1,18 @@
+export const qk = {
+  profile: ['profile'],
+  todos: ['todos'],
+  openTodos: ['todos', 'open'],
+  todosCountHead: ['todos', 'count', 'head'],
+  notesTree: ['notes', 'tree'],
+  notesCountHead: ['notes', 'count', 'head'],
+  note: (id: string) => ['notes', id],
+  recentNotes: ['notes', 'recent'],
+  backlinks: (id: string) => ['notes', id, 'backlinks'],
+  trash: ['notes', 'trash'],
+  sessions: (range?: string | number | { from: string; to: string }) => ['sessions', range],
+  todayFocus: ['sessions', 'today'],
+  userStats: ['user_stats'],
+  achievements: ['achievements'],
+  conversations: ['conversations'],
+  messages: (id: string) => ['messages', id],
+} as const;

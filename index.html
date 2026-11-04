@@ -1,36 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FocusLearn Plus</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-      body { font-family: 'Inter', sans-serif; }
-      /* Custom scrollbar for cleaner look */
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3",
-    "@google/genai": "https://esm.sh/@google/genai@0.7.0",
-    "recharts": "https://esm.sh/recharts@2.12.3",
-    "lucide-react": "https://esm.sh/lucide-react@0.363.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/"
-  }
-}
-</script>
-</head>
-  <body class="bg-gray-50 text-gray-900 h-screen w-screen overflow-hidden">
-    <div id="root" class="h-full w-full"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FocusLearn</title>
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFAF7" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#191817" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('fl:theme');
+          var theme = stored === 'light' || stored === 'dark' ? stored : 'system';
+          var isDark =
+            theme === 'dark' ||
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

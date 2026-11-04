@@ -1,27 +1,31 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, configDefaults } from 'vitest/config';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      base: '/',
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  base: '/aptechhn-n5/',
+  plugins: [tanstackRouter({ target: 'react', autoCodeSplitting: true }), react(), tailwindcss()],
+  resolve: {
+    alias: [
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+      { find: /^npm:(.*)$/, replacement: '$1' },
+    ],
+  },
+  test: {
+    environment: 'jsdom',
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost:3000/',
       },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      },
-      build: {
-        outDir: 'dist',
-      }
-    };
+    },
+    setupFiles: ['src/test/setup.ts'],
+    globals: false,
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'supabase/functions/**/*.{test,spec}.ts'],
+    exclude: [...configDefaults.exclude, '**/.worktrees/**', 'e2e/**'],
+  },
 });

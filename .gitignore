@@ -4,10 +4,23 @@ node_modules/
 # Build output
 dist/
 
+# Worktrees
+.worktrees/
+
 # Environment variables
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
+
+# Tooling and Superpowers
+.superpowers/
+
+# Test output
+playwright-report/
+test-results/
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
 
 # IDE
 .vscode/
