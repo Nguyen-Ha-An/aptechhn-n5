@@ -140,5 +140,29 @@ describe('legacy import', () => {
       expect(skippedCategories).toContain('Achievements');
       expect(skippedCategories).toContain('System & Empty Messages');
     });
+
+    it('maps missing or null priority to "none"', () => {
+      const raw = {
+        schemaVersion: 5,
+        todos: [
+          { id: 'todo-no-prio', title: 'Todo without priority' },
+          { id: 'todo-null-prio', title: 'Todo with null priority', priority: null },
+        ],
+        tasks: [
+          { id: 'task-no-prio', title: 'Task without priority', status: 'todo' },
+        ],
+      };
+      const parsed = parseLegacy(raw);
+      const result = mapLegacy(parsed);
+
+      const todoNoPrio = result.payloads.todos.find((t) => t.title === 'Todo without priority');
+      expect(todoNoPrio?.priority).toBe('none');
+
+      const todoNullPrio = result.payloads.todos.find((t) => t.title === 'Todo with null priority');
+      expect(todoNullPrio?.priority).toBe('none');
+
+      const taskNoPrio = result.payloads.todos.find((t) => t.title === 'Task without priority');
+      expect(taskNoPrio?.priority).toBe('none');
+    });
   });
 });

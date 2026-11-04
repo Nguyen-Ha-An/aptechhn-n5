@@ -100,7 +100,7 @@ function LegacyImportPage() {
       />
 
       {profile?.legacy_imported_at && (
-        <div className="rounded-md border border-rule bg-surface p-4 text-sm text-ink-muted">
+        <div className="rounded-md border border-rule bg-surface p-4 text-sm text-muted">
           <p className="font-medium text-ink">Previous import detected</p>
           <p className="mt-1">
             You previously imported legacy data into this account. Re-importing may create duplicate items.
@@ -112,7 +112,7 @@ function LegacyImportPage() {
         <div className="rounded-md border border-rule bg-surface p-6 space-y-4">
           <div className="space-y-1">
             <h2 className="text-base font-semibold text-ink">Import Complete</h2>
-            <p className="text-sm text-ink-muted">
+            <p className="text-sm text-muted">
               All items have been successfully imported into your FocusLearn notebook.
             </p>
           </div>
@@ -178,9 +178,9 @@ function LegacyImportPage() {
             <div className="space-y-6">
               <div className="space-y-3">
                 <h2 className="text-sm font-semibold text-ink">Items to Import</h2>
-                <div className="overflow-hidden rounded-md border border-rule bg-surface">
+                <div className="overflow-x-auto rounded-md border border-rule bg-surface">
                   <table className="w-full text-left text-sm text-ink">
-                    <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-ink-muted">
+                    <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-muted">
                       <tr>
                         <th className="px-4 py-2.5">Category</th>
                         <th className="px-4 py-2.5 text-right">Count</th>
@@ -227,9 +227,9 @@ function LegacyImportPage() {
               {mappedData.skipped.length > 0 && (
                 <div className="space-y-3">
                   <h2 className="text-sm font-semibold text-ink">Skipped Categories</h2>
-                  <div className="overflow-hidden rounded-md border border-rule bg-surface">
+                  <div className="overflow-x-auto rounded-md border border-rule bg-surface">
                     <table className="w-full text-left text-sm text-ink">
-                      <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-ink-muted">
+                      <thead className="border-b border-rule bg-paper text-xs uppercase tracking-wider text-muted">
                         <tr>
                           <th className="px-4 py-2.5">Category</th>
                           <th className="px-4 py-2.5 text-right">Count</th>
@@ -241,7 +241,7 @@ function LegacyImportPage() {
                           <tr key={index}>
                             <td className="px-4 py-2 font-medium">{item.category}</td>
                             <td className="px-4 py-2 text-right">{item.count}</td>
-                            <td className="px-4 py-2 text-ink-muted text-xs">{item.reason}</td>
+                            <td className="px-4 py-2 text-muted text-xs">{item.reason}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -260,13 +260,13 @@ function LegacyImportPage() {
                   Import {mappedData.counts.total} items
                 </Button>
                 {importing && (
-                  <span className="text-sm text-ink-muted" role="status">
+                  <span className="text-sm text-muted" role="status">
                     {progressText}
                   </span>
                 )}
                 <Link
                   to="/settings"
-                  className="text-sm text-ink-muted hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm px-1"
+                  className="text-sm text-muted hover:text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm px-1"
                 >
                   Cancel
                 </Link>

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/features/auth';
 import { useProfile } from '@/features/profile/queries';
+import { qk } from '@/lib/queryKeys';
 
 const DISMISSED_STORAGE_KEY = 'fl:import-banner-dismissed';
 
@@ -22,7 +23,7 @@ export function ImportBanner() {
   });
 
   const { data: todosCount } = useQuery({
-    queryKey: ['todos', 'count', 'head'],
+    queryKey: qk.todosCountHead,
     queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('todos')
@@ -34,7 +35,7 @@ export function ImportBanner() {
   });
 
   const { data: notesCount } = useQuery({
-    queryKey: ['notes', 'count', 'head'],
+    queryKey: qk.notesCountHead,
     queryFn: async (): Promise<number> => {
       const { count, error } = await supabase
         .from('notes')
@@ -86,7 +87,7 @@ export function ImportBanner() {
       <button
         type="button"
         onClick={handleDismiss}
-        className="text-xs text-ink-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2 py-1 cursor-pointer"
+        className="text-xs text-muted hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded px-2 py-1 cursor-pointer"
         aria-label="Dismiss import notice"
       >
         Dismiss

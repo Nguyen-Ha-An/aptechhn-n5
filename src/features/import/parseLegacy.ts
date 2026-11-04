@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const TaskPriorityEnum = z.enum(['low', 'medium', 'high', 'urgent']).catch('medium');
+const TaskPriorityEnum = z.enum(['low', 'medium', 'high', 'urgent']);
 const TaskStatusEnum = z.enum(['inbox', 'todo', 'in_progress', 'done']).catch('todo');
 
 const LegacyTaskSchema = z.object({
@@ -8,7 +8,7 @@ const LegacyTaskSchema = z.object({
   title: z.string().default('Untitled Task'),
   description: z.string().optional().default(''),
   status: TaskStatusEnum,
-  priority: TaskPriorityEnum.optional().default('medium'),
+  priority: TaskPriorityEnum.optional().nullable(),
   projectId: z.string().nullable().optional(),
   cycleId: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
@@ -40,7 +40,7 @@ const LegacyTodoSchema = z.object({
   updatedAt: z.string().optional(),
   dueDate: z.string().nullable().optional(),
   subjectId: z.string().nullable().optional(),
-  priority: TaskPriorityEnum.optional().default('medium'),
+  priority: TaskPriorityEnum.optional().nullable(),
 }).passthrough();
 
 const LegacyDistractionSchema = z.object({
