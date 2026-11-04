@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "@google/genai": "npm:@google/genai",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "zod": "npm:zod"
+  }
+}
