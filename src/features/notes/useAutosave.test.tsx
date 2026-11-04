@@ -25,13 +25,14 @@ describe('useAutosave', () => {
       defaultOptions: { queries: { retry: false } },
     });
 
-    vi.mocked(queries.useUpdateNote).mockReturnValue({
+    // Return a fresh object literal on every render (reproducing real useMutation behavior)
+    vi.mocked(queries.useUpdateNote).mockImplementation(() => ({
       mutateAsync: mockMutateUpdate,
-    } as never);
+    } as never));
 
-    vi.mocked(queries.useSyncLinks).mockReturnValue({
+    vi.mocked(queries.useSyncLinks).mockImplementation(() => ({
       mutateAsync: mockMutateSync,
-    } as never);
+    } as never));
   });
 
   afterEach(() => {
@@ -42,7 +43,7 @@ describe('useAutosave', () => {
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
-  it('debounces saves by 800ms and calls update once with latest content', async () => {
+  it('debounces saves by 800ms and calls update once with latest content despite re-renders', async () => {
     const { result } = renderHook(
       () =>
         useAutosave({
@@ -59,11 +60,13 @@ describe('useAutosave', () => {
       result.current.setTitle('Draft 1');
     });
     expect(result.current.saveStatus.state).toBe('saving');
+    expect(mockMutateUpdate).not.toHaveBeenCalled();
 
     act(() => {
       vi.advanceTimersByTime(300);
       result.current.setTitle('Draft 2');
     });
+    expect(mockMutateUpdate).not.toHaveBeenCalled();
 
     act(() => {
       vi.advanceTimersByTime(300);
@@ -82,12 +85,18 @@ describe('useAutosave', () => {
       );
     });
 
-    // Before 800ms elapsed from last change
+    // Before 800ms elapsed from last change, update must NOT have been called
     expect(mockMutateUpdate).not.toHaveBeenCalled();
 
-    // Advance remaining 800ms
+    // Advance 799ms - still not called
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(800);
+      await vi.advanceTimersByTimeAsync(799);
+    });
+    expect(mockMutateUpdate).not.toHaveBeenCalled();
+
+    // Advance 1ms more (reaching 800ms)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1);
     });
 
     expect(mockMutateUpdate).toHaveBeenCalledTimes(1);

@@ -1,7 +1,4 @@
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
-import { qk } from '@/lib/queryKeys';
+import { createFileRoute, useNavigate, Link, useParams } from '@tanstack/react-router';
 import { formatTime } from '@/lib/dates';
 import {
   EmptyState,
@@ -18,6 +15,7 @@ import {
 import { NoteEditor } from '@/features/notes/editor/NoteEditor';
 import { PageIconPicker } from '@/features/notes/PageIconPicker';
 import {
+  useNote,
   useCreateNote,
   useArchiveNote,
   useRestoreNote,
@@ -35,31 +33,18 @@ export const Route = createFileRoute('/_app/notes/$noteId')({
 });
 
 function NotePage() {
-  const { noteId } = Route.useParams();
+  const params = useParams({ strict: false }) as { noteId?: string };
+  const noteId = params.noteId ?? '';
   const navigate = useNavigate();
 
-  // Query note data
+  // Query note data using centralized useNote hook
   const {
     data: note,
     isLoading,
     isError,
     error,
     refetch,
-  } = useQuery({
-    queryKey: qk.note(noteId),
-    queryFn: async (): Promise<NoteRow | null> => {
-      const { data, error: fetchError } = await supabase
-        .from('notes')
-        .select('id, parent_id, icon, title, content, content_text, position, archived_at, created_at, updated_at')
-        .eq('id', noteId)
-        .maybeSingle();
-
-      if (fetchError) {
-        throw new Error(fetchError.message);
-      }
-      return data as NoteRow | null;
-    },
-  });
+  } = useNote(noteId);
 
   if (isLoading) {
     return (
@@ -98,6 +83,7 @@ function NotePage() {
 
   return (
     <NoteEditorView
+      key={note.id}
       note={note}
       noteId={noteId}
       onNavigate={(id) => {
@@ -119,7 +105,15 @@ function NoteEditorView({
   onNavigate,
 }: NoteEditorViewProps) {
   const navigate = useNavigate();
-  const { data: backlinks, isLoading: backlinksLoading } = useBacklinks(noteId);
+  const { data: profile } = useProfile();
+  const tz = profile?.timezone ?? 'Asia/Ho_Chi_Minh';
+
+  const {
+    data: backlinks,
+    isLoading: backlinksLoading,
+    isError: backlinksError,
+    refetch: refetchBacklinks,
+  } = useBacklinks(noteId);
   const { data: notesTreeItems } = useNotesTree();
 
   const createNote = useCreateNote();
@@ -166,8 +160,6 @@ function NoteEditorView({
       return undefined;
     }
   };
-  const { data: profile } = useProfile();
-  const tz = profile?.timezone ?? 'Asia/Ho_Chi_Minh';
 
   const {
     title,
@@ -206,7 +198,7 @@ function NoteEditorView({
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Untitled"
                   aria-label="Page title"
-                  className="w-full bg-transparent border-none p-0 focus:outline-none placeholder:text-muted/40 font-serif font-semibold text-ink"
+                  className="w-full bg-transparent border-none p-0 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2 rounded-[4px] placeholder:text-muted font-serif font-semibold text-ink"
                 />
               </h1>
 
@@ -223,7 +215,7 @@ function NoteEditorView({
                       size="sm"
                       variant="ghost"
                       onClick={() => void flush()}
-                      className="h-5 px-1.5 text-xs text-ink"
+                      className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 h-auto md:h-5 px-2 md:px-1.5 text-xs text-ink"
                     >
                       Retry
                     </Button>
@@ -270,13 +262,25 @@ function NoteEditorView({
       <section aria-labelledby="backlinks-heading" className="mt-16 pt-6 border-t border-rule">
         <h2
           id="backlinks-heading"
-          className="text-xs font-semibold text-muted uppercase tracking-wider mb-3"
+          className="font-serif text-[1.375rem] font-semibold text-ink mb-3"
         >
           Linked from
         </h2>
 
         {backlinksLoading ? (
           <Skeleton rows={2} />
+        ) : backlinksError ? (
+          <div className="flex items-center gap-2 text-xs text-danger py-2">
+            <span>Failed to load backlinks.</span>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => void refetchBacklinks()}
+              className="min-h-[44px] md:min-h-0 h-auto md:h-5 px-2 md:px-1.5 text-xs text-ink"
+            >
+              Retry
+            </Button>
+          </div>
         ) : !backlinks || backlinks.length === 0 ? (
           <p className="text-xs text-muted">No pages link here yet.</p>
         ) : (
@@ -286,7 +290,7 @@ function NoteEditorView({
                 key={link.id}
                 to="/notes/$noteId"
                 params={{ noteId: link.id }}
-                className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-sm text-ink hover:bg-surface transition-colors"
+                className="flex items-center gap-2 rounded-[6px] px-2 py-1.5 text-sm text-ink hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent transition-colors min-h-[44px] md:min-h-0"
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm">
                   {link.icon ? (

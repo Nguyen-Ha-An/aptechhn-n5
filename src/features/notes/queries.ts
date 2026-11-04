@@ -407,6 +407,7 @@ export function useSearchNotes(rawQuery: string) {
   }, [rawQuery]);
 
   const isEnabled = debouncedQuery.length >= 2;
+  const isDebouncing = rawQuery.trim().length >= 2 && rawQuery.trim() !== debouncedQuery;
 
   const query = useQuery({
     queryKey: ['notes', 'search', debouncedQuery],
@@ -430,11 +431,13 @@ export function useSearchNotes(rawQuery: string) {
     },
   });
 
+  const isSearching = (isEnabled && query.isLoading) || isDebouncing;
+
   return {
     ...query,
-    data: isEnabled ? query.data ?? [] : [],
+    data: isEnabled && !isDebouncing ? query.data ?? [] : [],
     debouncedQuery,
-    isSearching: isEnabled && query.isLoading,
+    isSearching,
   };
 }
 
@@ -492,12 +495,13 @@ export function useSyncLinks() {
 
       return { count: rows.length, validTargetIds };
     },
-    onSuccess: async (result) => {
-      if (result && result.validTargetIds) {
-        for (const targetId of result.validTargetIds) {
-          await queryClient.invalidateQueries({ queryKey: qk.backlinks(targetId) });
-        }
-      }
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        predicate: (q) =>
+          Array.isArray(q.queryKey) &&
+          q.queryKey[0] === 'notes' &&
+          q.queryKey[2] === 'backlinks',
+      });
     },
   });
 }

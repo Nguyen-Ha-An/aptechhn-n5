@@ -90,7 +90,7 @@ export const PageLinkMenu = forwardRef<PageLinkMenuHandle, PageLinkMenuProps>(
         aria-activedescendant={`link-item-${selectedIndex}`}
         className="z-50 max-h-72 w-64 overflow-y-auto rounded-[10px] border border-rule bg-paper p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.5)] focus:outline-none"
       >
-        <div className="px-2 py-1 text-[11px] font-semibold text-muted">LINK TO PAGE</div>
+        <div className="px-2 py-1 text-xs font-semibold text-muted">Link to page</div>
         {items.map((item, index) => {
           const isSelected = index === selectedIndex;
 

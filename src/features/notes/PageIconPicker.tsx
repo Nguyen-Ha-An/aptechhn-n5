@@ -56,7 +56,7 @@ export function PageIconPicker({ icon, onChangeIcon, disabled = false }: PageIco
           type="button"
           disabled={disabled}
           aria-label={icon ? `Change page icon, current icon is ${icon}` : 'Add page icon'}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-[6px] text-2xl transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
+          className="inline-flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-10 md:w-10 items-center justify-center rounded-[6px] text-2xl transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent"
         >
           {icon ? (
             <span role="img" aria-hidden="true">

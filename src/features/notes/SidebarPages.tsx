@@ -52,15 +52,27 @@ function TreeNodeRow({
   const isExpanded = expandedIds.has(node.id);
   const isCurrent = currentNoteId === node.id;
 
+  const handleRename = () => {
+    void navigate({
+      to: '/notes/$noteId',
+      params: { noteId: node.id },
+    }).then(() => {
+      setTimeout(() => {
+        const input = document.querySelector<HTMLInputElement>(
+          'input[aria-label="Page title"]',
+        );
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }, 50);
+    });
+  };
+
   return (
-    <div
-      role="treeitem"
-      aria-selected={isCurrent}
-      aria-expanded={hasChildren ? isExpanded : undefined}
-      aria-level={depth + 1}
-    >
+    <li>
       <div
-        className={`group relative flex h-7 items-center gap-1 rounded-[6px] px-1 text-xs transition-colors ${
+        className={`group relative flex min-h-[44px] md:min-h-[28px] h-auto md:h-7 items-center gap-1 rounded-[6px] px-1 text-xs transition-colors ${
           isCurrent
             ? 'bg-paper font-semibold text-ink'
             : 'text-ink hover:bg-surface'
@@ -71,12 +83,17 @@ function TreeNodeRow({
         {hasChildren ? (
           <button
             type="button"
-            aria-label={isExpanded ? `Collapse ${node.title || 'Untitled'}` : `Expand ${node.title || 'Untitled'}`}
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded
+                ? `Collapse ${node.title || 'Untitled'}`
+                : `Expand ${node.title || 'Untitled'}`
+            }
             onClick={(e) => {
               e.stopPropagation();
               onToggleExpand(node.id);
             }}
-            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] text-muted hover:bg-surface hover:text-ink"
+            className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-5 md:w-5 h-7 w-7 shrink-0 items-center justify-center rounded-[4px] text-muted hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
           >
             <CaretRight
               size={12}
@@ -92,7 +109,7 @@ function TreeNodeRow({
         <Link
           to="/notes/$noteId"
           params={{ noteId: node.id }}
-          className="flex min-w-0 flex-1 items-center gap-1.5 truncate py-1 outline-none focus-visible:ring-1 focus-visible:ring-accent"
+          className="flex min-w-0 flex-1 items-center gap-1.5 truncate py-1.5 md:py-1 rounded-[4px] focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
         >
           <span className="flex h-4 w-4 shrink-0 items-center justify-center text-xs">
             {node.icon ? (
@@ -106,30 +123,23 @@ function TreeNodeRow({
           <span className="truncate">{node.title || 'Untitled'}</span>
         </Link>
 
-        {/* Row Menu */}
-        <div className="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+        {/* Row Menu: visible by default on mobile touch targets, hover on desktop */}
+        <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 transition-opacity">
           <Menu>
             <MenuTrigger asChild>
               <button
                 type="button"
                 aria-label="More options"
-                className="flex h-5 w-5 items-center justify-center rounded-[4px] text-muted hover:bg-surface hover:text-ink"
+                className="flex min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 md:h-5 md:w-5 h-7 w-7 items-center justify-center rounded-[4px] text-muted hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
               >
                 <DotsThree size={14} weight="bold" aria-hidden="true" />
               </button>
             </MenuTrigger>
-            <MenuContent align="start">
+            <MenuContent align="start" onCloseAutoFocus={(e) => e.preventDefault()}>
               <MenuItem onSelect={() => onAddSubpage(node.id)}>
                 Add subpage
               </MenuItem>
-              <MenuItem
-                onSelect={() => {
-                  void navigate({
-                    to: '/notes/$noteId',
-                    params: { noteId: node.id },
-                  });
-                }}
-              >
+              <MenuItem onSelect={handleRename}>
                 Rename
               </MenuItem>
               <MenuSeparator />
@@ -146,7 +156,7 @@ function TreeNodeRow({
 
       {/* Render children if expanded */}
       {hasChildren && isExpanded && (
-        <div role="group">
+        <ul className="space-y-0.5 mt-0.5">
           {node.children.map((child) => (
             <TreeNodeRow
               key={child.id}
@@ -159,9 +169,9 @@ function TreeNodeRow({
               currentNoteId={currentNoteId}
             />
           ))}
-        </div>
+        </ul>
       )}
-    </div>
+    </li>
   );
 }
 
@@ -191,7 +201,7 @@ function SidebarPagesContent() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
-  const { data: notes, isLoading, isError } = useNotesTree();
+  const { data: notes, isLoading, isError, refetch } = useNotesTree();
   const createNote = useCreateNote();
   const archiveNote = useArchiveNote();
   const restoreNote = useRestoreNote();
@@ -268,6 +278,7 @@ function SidebarPagesContent() {
             label="Search pages"
             size="sm"
             onClick={() => setSearchOpen(true)}
+            className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
           >
             <MagnifyingGlass size={14} aria-hidden="true" />
           </IconButton>
@@ -275,6 +286,7 @@ function SidebarPagesContent() {
             label="New page"
             size="sm"
             onClick={() => void handleCreateRootPage()}
+            className="min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
           >
             <Plus size={14} aria-hidden="true" />
           </IconButton>
@@ -287,44 +299,51 @@ function SidebarPagesContent() {
           <Skeleton rows={3} />
         </div>
       ) : isError ? (
-        <div className="py-2 text-xs text-danger">Failed to load pages.</div>
+        <div className="py-2 text-xs text-danger flex flex-col items-start gap-1">
+          <span>Failed to load pages.</span>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="text-xs text-ink underline hover:text-accent font-medium min-h-[44px] md:min-h-0 flex items-center"
+          >
+            Retry
+          </button>
+        </div>
       ) : tree.length === 0 ? (
         <div className="py-2">
           <p className="text-xs text-muted mb-2">No pages yet</p>
           <button
             type="button"
             onClick={() => void handleCreateRootPage()}
-            className="flex items-center gap-1.5 text-xs text-ink hover:underline font-medium"
+            className="flex items-center gap-1.5 text-xs text-ink hover:underline font-medium min-h-[44px] md:min-h-0"
           >
             <Plus size={12} aria-hidden="true" />
             <span>New page</span>
           </button>
         </div>
       ) : (
-        <div
-          role="tree"
-          aria-label="Pages"
-          className="space-y-0.5"
-        >
-          {tree.map((node) => (
-            <TreeNodeRow
-              key={node.id}
-              node={node}
-              expandedIds={expandedIds}
-              onToggleExpand={handleToggleExpand}
-              onAddSubpage={(pId) => void handleAddSubpage(pId)}
-              onArchive={(nId, t) => void handleArchive(nId, t)}
-              currentNoteId={currentNoteId}
-            />
-          ))}
-        </div>
+        <nav aria-label="Pages">
+          <ul className="space-y-0.5">
+            {tree.map((node) => (
+              <TreeNodeRow
+                key={node.id}
+                node={node}
+                expandedIds={expandedIds}
+                onToggleExpand={handleToggleExpand}
+                onAddSubpage={(pId) => void handleAddSubpage(pId)}
+                onArchive={(nId, t) => void handleArchive(nId, t)}
+                currentNoteId={currentNoteId}
+              />
+            ))}
+          </ul>
+        </nav>
       )}
 
       {/* Trash link */}
       <div className="mt-3 pt-2 border-t border-rule">
         <Link
           to="/notes/trash"
-          className={`flex h-7 items-center gap-2 rounded-[6px] px-2 text-xs transition-colors ${
+          className={`flex h-8 md:h-7 min-h-[44px] md:min-h-0 items-center gap-2 rounded-[6px] px-2 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-accent ${
             currentPath === '/notes/trash'
               ? 'bg-paper font-semibold text-ink'
               : 'text-muted hover:bg-surface hover:text-ink'

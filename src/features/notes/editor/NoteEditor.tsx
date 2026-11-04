@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { useEditor, EditorContent, ReactRenderer } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TaskList from '@tiptap/extension-task-list';
@@ -50,6 +50,18 @@ export function NoteEditor({
   editable = true,
   className = '',
 }: NoteEditorProps) {
+  const notesTreeItemsRef = useRef(notesTreeItems);
+  const onCreatePageRef = useRef(onCreatePage);
+  const onNavigatePageRef = useRef(onNavigatePage);
+  const onChangeRef = useRef(onChange);
+
+  useEffect(() => {
+    notesTreeItemsRef.current = notesTreeItems;
+    onCreatePageRef.current = onCreatePage;
+    onNavigatePageRef.current = onNavigatePage;
+    onChangeRef.current = onChange;
+  });
+
   const extensions = useMemo(() => {
     return [
       StarterKit.configure({
@@ -119,6 +131,7 @@ export function NoteEditor({
           },
         },
       }),
+      // eslint-disable-next-line react-hooks/refs
       PageLink.configure({
         suggestion: {
           char: '[[',
@@ -126,7 +139,8 @@ export function NoteEditor({
           allowSpaces: true,
           items: ({ query }) => {
             const normalized = query.trim().toLowerCase();
-            const filteredNotes = notesTreeItems.filter((note) =>
+            const currentTree = notesTreeItemsRef.current ?? [];
+            const filteredNotes = currentTree.filter((note) =>
               note.title.toLowerCase().includes(normalized),
             );
 
@@ -160,7 +174,7 @@ export function NoteEditor({
                 component = new ReactRenderer(PageLinkMenu, {
                   props: {
                     ...props,
-                    onCreateNote: (t: string) => onCreatePage?.(t) ?? Promise.resolve(undefined),
+                    onCreateNote: (t: string) => onCreatePageRef.current?.(t) ?? Promise.resolve(undefined),
                   },
                   editor: props.editor,
                 });
@@ -171,7 +185,7 @@ export function NoteEditor({
               onUpdate: (props) => {
                 component?.updateProps({
                   ...props,
-                  onCreateNote: (t: string) => onCreatePage?.(t) ?? Promise.resolve(undefined),
+                  onCreateNote: (t: string) => onCreatePageRef.current?.(t) ?? Promise.resolve(undefined),
                 });
                 updatePopupPosition(props.clientRect?.(), popup);
               },
@@ -196,7 +210,7 @@ export function NoteEditor({
         },
       }),
     ];
-  }, [notesTreeItems, onCreatePage]);
+  }, []);
 
   const editor = useEditor({
     extensions,
@@ -208,8 +222,9 @@ export function NoteEditor({
         const link = target?.closest('a[data-page-id]');
         if (link) {
           const pageId = link.getAttribute('data-page-id');
-          if (pageId && onNavigatePage) {
-            onNavigatePage(pageId);
+          if (pageId && onNavigatePageRef.current) {
+            event.preventDefault();
+            onNavigatePageRef.current(pageId);
             return true;
           }
         }
@@ -222,7 +237,7 @@ export function NoteEditor({
     onUpdate: ({ editor: currentEditor }) => {
       const json = currentEditor.getJSON();
       const text = docToPlainText(json);
-      onChange?.(json, text);
+      onChangeRef.current?.(json, text);
     },
   });
 
@@ -237,12 +252,14 @@ export function NoteEditor({
     if (!editor) return;
     const dom = editor.view.dom;
     const handleClick = (event: MouseEvent) => {
+      if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
       const link = target?.closest('a[data-page-id]');
       if (link) {
         const pageId = link.getAttribute('data-page-id');
-        if (pageId) {
-          onNavigatePage?.(pageId);
+        if (pageId && onNavigatePageRef.current) {
+          event.preventDefault();
+          onNavigatePageRef.current(pageId);
         }
       }
     };
@@ -250,7 +267,7 @@ export function NoteEditor({
     return () => {
       dom.removeEventListener('click', handleClick);
     };
-  }, [editor, onNavigatePage]);
+  }, [editor]);
 
   return (
     <div className={`note-editor-wrapper ${className}`}>

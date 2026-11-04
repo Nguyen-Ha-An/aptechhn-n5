@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
   createRootRoute,
@@ -7,6 +7,7 @@ import {
   createRouter,
   createMemoryHistory,
   RouterProvider,
+  Outlet,
 } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
@@ -34,7 +35,12 @@ describe('SidebarPages', () => {
 
   function renderSidebarPages(initialPath = '/') {
     const rootRoute = createRootRoute({
-      component: () => <SidebarPages />,
+      component: () => (
+        <div>
+          <SidebarPages />
+          <Outlet />
+        </div>
+      ),
     });
 
     const indexRoute = createRoute({
@@ -46,7 +52,11 @@ describe('SidebarPages', () => {
     const noteRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: '/notes/$noteId',
-      component: () => <div>Note</div>,
+      component: () => (
+        <div>
+          <input aria-label="Page title" defaultValue="Math Notes" />
+        </div>
+      ),
     });
 
     const trashRoute = createRoute({
@@ -131,5 +141,41 @@ describe('SidebarPages', () => {
 
     // Child should now be visible
     expect(await screen.findByText('Child Page')).toBeInTheDocument();
+  });
+
+  it('focuses and selects the page title input when Rename is clicked in the row menu', async () => {
+    const user = userEvent.setup();
+
+    vi.mocked(supabase.from).mockReturnValue({
+      select: () => ({
+        is: () => ({
+          order: async () => ({
+            data: [
+              {
+                id: 'p1',
+                parent_id: null,
+                title: 'Math Notes',
+                icon: null,
+                position: 1,
+              },
+            ],
+            error: null,
+          }),
+        }),
+      }),
+    } as never);
+
+    renderSidebarPages('/notes/p1');
+
+    const moreBtn = await screen.findByRole('button', { name: 'More options' });
+    await user.click(moreBtn);
+
+    const renameItem = await screen.findByRole('menuitem', { name: 'Rename' });
+    await user.click(renameItem);
+
+    const titleInput = screen.getByLabelText('Page title');
+    await waitFor(() => {
+      expect(document.activeElement).toBe(titleInput);
+    });
   });
 });

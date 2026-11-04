@@ -35,6 +35,14 @@ export function useAutosave({
   const updateNoteMutation = useUpdateNote();
   const syncLinksMutation = useSyncLinks();
 
+  const updateMutateRef = useRef(updateNoteMutation.mutateAsync);
+  const syncMutateRef = useRef(syncLinksMutation.mutateAsync);
+
+  useEffect(() => {
+    updateMutateRef.current = updateNoteMutation.mutateAsync;
+    syncMutateRef.current = syncLinksMutation.mutateAsync;
+  }, [updateNoteMutation.mutateAsync, syncLinksMutation.mutateAsync]);
+
   const dirtyRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -78,7 +86,7 @@ export function useAutosave({
     const currentData = { ...latestDataRef.current };
 
     try {
-      await updateNoteMutation.mutateAsync({
+      await updateMutateRef.current({
         id: noteId,
         title: currentData.title,
         icon: currentData.icon,
@@ -87,7 +95,7 @@ export function useAutosave({
       });
 
       const links = extractLinks(currentData.content);
-      await syncLinksMutation.mutateAsync({
+      await syncMutateRef.current({
         noteId,
         targetIds: links,
       });
@@ -100,7 +108,7 @@ export function useAutosave({
         error: err instanceof Error ? err : new Error('Could not save'),
       });
     }
-  }, [noteId, updateNoteMutation, syncLinksMutation]);
+  }, [noteId]);
 
   const scheduleSave = useCallback(() => {
     dirtyRef.current = true;
@@ -142,14 +150,14 @@ export function useAutosave({
     [scheduleSave],
   );
 
-  // Flush on unmount / route change
+  // Flush on unmount / route change (stable across renders of same noteId)
   useEffect(() => {
     return () => {
       if (dirtyRef.current) {
         void flush();
       }
     };
-  }, [flush]);
+  }, [noteId, flush]);
 
   // Flush on beforeunload
   useEffect(() => {
