@@ -137,6 +137,18 @@ describe('LoginPage', () => {
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
 
+  it('renders full-page skeleton while session status is loading', () => {
+    vi.spyOn(authFeature, 'useSession').mockReturnValue({
+      session: null,
+      user: null,
+      status: 'loading',
+    });
+
+    render(<LoginPage />);
+    expect(screen.getByRole('status', { name: 'Loading workspace' })).toBeInTheDocument();
+    expect(screen.queryByLabelText('Email')).not.toBeInTheDocument();
+  });
+
   it('redirects signed-in user to root', () => {
     vi.spyOn(authFeature, 'useSession').mockReturnValue({
       session: { user: { id: 'u1' } } as never,

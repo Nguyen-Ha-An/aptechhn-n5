@@ -23,6 +23,27 @@ describe('UI Component Kit', () => {
     expect(button).toHaveAttribute('aria-label', 'Settings');
   });
 
+  it('disabled Button and IconButton retain cursor: not-allowed without pointer-events-none', () => {
+    render(
+      <div>
+        <Button disabled>Disabled Action</Button>
+        <IconButton disabled label="Disabled Icon">
+          <GearSix size={18} />
+        </IconButton>
+      </div>,
+    );
+
+    const btn = screen.getByRole('button', { name: 'Disabled Action' });
+    expect(btn).toBeDisabled();
+    expect(btn.className).toContain('cursor-not-allowed');
+    expect(btn.className).not.toContain('pointer-events-none');
+
+    const iconBtn = screen.getByRole('button', { name: 'Disabled Icon' });
+    expect(iconBtn).toBeDisabled();
+    expect(iconBtn.className).toContain('cursor-not-allowed');
+    expect(iconBtn.className).not.toContain('pointer-events-none');
+  });
+
   it('Field wires error to aria-describedby and sets aria-invalid', () => {
     render(
       <Field

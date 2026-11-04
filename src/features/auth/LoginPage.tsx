@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { supabase } from '@/lib/supabase';
 import { useSession } from '@/features/auth/useSession';
 import { Button, Field } from '@/components/ui';
+import { FullPageSkeleton } from '@/components/FullPageSkeleton';
 
 const emailSchema = z.string().trim().email('Please enter a valid email address.');
 const tokenSchema = z
@@ -37,6 +38,10 @@ export function LoginPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (status === 'loading') {
+    return <FullPageSkeleton />;
+  }
 
   if (status === 'signed-in') {
     return <Navigate to="/" replace />;

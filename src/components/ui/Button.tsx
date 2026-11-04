@@ -45,7 +45,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   };
 
   const stateStyles = isDisabled
-    ? 'opacity-50 cursor-not-allowed pointer-events-none'
+    ? 'opacity-50 cursor-not-allowed'
     : 'cursor-pointer';
 
   return (

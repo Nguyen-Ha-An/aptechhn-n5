@@ -42,7 +42,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       : 'bg-surface text-ink border border-rule hover:bg-paper active:bg-surface/80';
 
   const stateStyles = disabled
-    ? 'opacity-50 cursor-not-allowed pointer-events-none'
+    ? 'opacity-50 cursor-not-allowed'
     : 'cursor-pointer';
 
   const iconChild = isValidElement(children)
@@ -70,6 +70,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
           <Tooltip.Content
             side={side}
             sideOffset={4}
+            aria-hidden="true"
             className="z-50 rounded-[6px] border border-rule bg-paper px-2 py-1 text-xs text-ink shadow-[0_8px_24px_rgba(0,0,0,0.12)] animate-in fade-in-0 zoom-in-95"
           >
             {label}
