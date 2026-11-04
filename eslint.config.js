@@ -1,18 +1,12 @@
-import tseslint from 'typescript-eslint';
-import reactHooks from 'eslint-plugin-react-hooks';
-import jsxA11y from 'eslint-plugin-jsx-a11y';
+const browser = ['document', 'window', 'location', 'localStorage', 'matchMedia',
+  'FormData', 'URL', 'Blob', 'fetch', 'crypto', 'confirm', 'TextDecoder',
+  'AbortController', 'setInterval', 'clearInterval', 'setTimeout', 'console', 'structuredClone'];
 
-export default tseslint.config(
+export default [
+  { ignores: ['node_modules/**', 'dist/**'] },
   {
-    ignores: [
-      'dist/**',
-      'src/routeTree.gen.ts',
-      'supabase/functions/**',
-      '.worktrees/**',
-      '.superpowers/**',
-    ],
+    files: ['src/**/*.js'],
+    languageOptions: { globals: Object.fromEntries(browser.map(name => [name, 'readonly'])) },
+    rules: { 'no-undef': 'error', 'no-unused-vars': ['error', { argsIgnorePattern: '^_' }] },
   },
-  ...tseslint.configs.recommended,
-  reactHooks.configs.flat.recommended,
-  jsxA11y.flatConfigs.recommended,
-);
+];

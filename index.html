@@ -1,28 +1,106 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FocusLearn</title>
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBFAF7" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#191817" />
-    <script>
-      (function () {
-        try {
-          var stored = localStorage.getItem('fl:theme');
-          var theme = stored === 'light' || stored === 'dark' ? stored : 'system';
-          var isDark =
-            theme === 'dark' ||
-            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
-        } catch (e) {
-          document.documentElement.dataset.theme = 'light';
-        }
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FocusLearn</title>
+  <style>
+    /* Warm paper and ruled headings make this feel like a study notebook. */
+    :root { color-scheme: light; --paper: #fbfaf7; --surface: #f3f1ec; --ink: #1f1e1c; --muted: #6b675f; --rule: #e4e0d7; --accent: #b5432f; --on-accent: #fff; }
+    :root[data-theme="dark"] { color-scheme: dark; --paper: #191817; --surface: #22211f; --ink: #eceae4; --muted: #a8a398; --rule: #34322e; --accent: #e07a5f; --on-accent: #191817; }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { max-width: 740px; margin: auto; padding: 24px; background: var(--paper); color: var(--ink); font: 16px/1.6 system-ui, sans-serif; }
+    header, .row, .task-row, .note-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    header { justify-content: space-between; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+    .brand, h1, h2 { font-family: Georgia, serif; }
+    .brand { font-size: 26px; text-decoration: none; font-weight: bold; }
+    nav { display: flex; gap: 18px; }
+    a { color: inherit; text-underline-offset: 4px; }
+    a, button, input[type="checkbox"] { cursor: pointer; }
+    a { display: inline-flex; align-items: center; min-height: 44px; }
+    a:hover, button:hover { text-decoration: underline; }
+    a:active, button:active { opacity: 0.7; }
+    h1 { margin: 32px 0 0; font-size: clamp(32px, 6vw, 42px); line-height: 1.2; }
+    h2 { font-size: 26px; border-bottom: 1px solid var(--rule); padding-bottom: 10px; }
+    section { margin: 40px 0; scroll-margin-top: 20px; }
+    p, li, button { overflow-wrap: anywhere; }
+    label { display: block; margin: 12px 0 6px; }
+    input, textarea, button { font: inherit; color: inherit; border: 1px solid var(--rule); border-radius: 5px; }
+    input:not([type="checkbox"]), textarea { width: 100%; min-width: 0; background: var(--paper); padding: 10px; }
+    textarea { resize: vertical; }
+    button { min-height: 44px; padding: 8px 14px; background: var(--surface); }
+    button:disabled, input:disabled { opacity: 0.55; cursor: not-allowed; }
+    .primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    ul { list-style: none; padding: 0; }
+    li { border-bottom: 1px solid var(--rule); padding: 12px 0; }
+    .task-row label { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; min-height: 44px; margin: 0; cursor: pointer; }
+    input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--accent); }
+    .done { text-decoration: line-through; }
+    .note-row .open-note { flex: 1; text-align: left; min-width: 0; }
+    .row { margin-top: 16px; }
+    .row input { flex: 1; min-width: 120px; }
+    .muted, footer { color: var(--muted); }
+    .timer { display: block; margin: 12px 0; font-size: clamp(52px, 12vw, 80px); font-variant-numeric: tabular-nums; line-height: 1.3; }
+    #timer-form { max-width: 360px; }
+    #feedback { min-height: 28px; margin-bottom: 0; }
+    footer { border-top: 1px solid var(--rule); padding: 18px 0; font-size: 14px; }
+    .skip { position: absolute; top: -100px; background: var(--paper); }
+    .skip:focus { top: 8px; }
+    @media (max-width: 480px) { body { padding: 20px; } header { gap: 8px 16px; } nav { order: 3; width: 100%; } section { margin: 32px 0; } }
+  </style>
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header>
+    <a class="brand" href="#main">FocusLearn</a>
+    <nav aria-label="Main navigation"><a href="#tasks">Tasks</a><a href="#notes">Notes</a><a href="#focus">Timer</a></nav>
+    <button id="theme" type="button" aria-pressed="false">Dark mode</button>
+  </header>
+  <main id="main" tabindex="-1">
+    <h1>Your study desk</h1>
+    <p id="date" class="muted"></p>
+    <p id="loading" role="status">Loading your desk...</p>
+    <p id="feedback" role="alert"></p>
+
+    <section id="tasks" aria-labelledby="tasks-title">
+      <h2 id="tasks-title">Tasks</h2>
+      <form id="task-form">
+        <label for="task-title">What needs doing?</label>
+        <div class="row"><input id="task-title" required maxlength="500" placeholder="Read one chapter" /><button class="primary">Add task</button></div>
+      </form>
+      <ul id="task-list"></ul>
+      <p id="tasks-empty" class="muted" hidden>No tasks yet. Add one small thing.</p>
+    </section>
+
+    <section id="notes" aria-labelledby="notes-title">
+      <h2 id="notes-title">Notes</h2>
+      <ul id="note-list"></ul>
+      <p id="notes-empty" class="muted" hidden>No notes yet. Write your first one below.</p>
+      <form id="note-form">
+        <label for="note-title">Title</label><input id="note-title" required maxlength="200" />
+        <label for="note-text">Text</label><textarea id="note-text" rows="5" maxlength="50000"></textarea>
+        <div class="row"><button class="primary" id="save-note">Add note</button><button id="new-note" type="button">Clear editor</button><span id="note-status" role="status"></span></div>
+      </form>
+    </section>
+
+    <section id="focus" aria-labelledby="focus-title">
+      <h2 id="focus-title">Focus timer</h2>
+      <form id="timer-form">
+        <label for="minutes">Minutes</label><input id="minutes" type="number" min="1" max="180" value="25" required />
+        <output id="timer" class="timer" role="timer" aria-label="Time remaining">25:00</output>
+        <div class="row"><button id="start-timer" class="primary">Start timer</button><button id="reset-timer" type="button">Reset timer</button></div>
+      </form>
+      <p id="timer-status" role="status">Choose a few minutes for one task.</p>
+    </section>
+  </main>
+  <footer><p>Example tasks and notes. Your edits stay in this browser.</p><button id="reset-data" type="button">Reset examples</button></footer>
+  <noscript>Enable JavaScript to use tasks, notes and the timer.</noscript>
+
+  <!-- Repeated rows live in HTML. JavaScript copies them and fills in the text. -->
+  <template id="task-template"><li class="task-row"><label><input type="checkbox" /><span></span></label><button type="button">Delete</button></li></template>
+  <template id="note-template"><li class="note-row"><button class="open-note" type="button"></button><button class="delete-note" type="button">Delete</button></li></template>
+</body>
 </html>
