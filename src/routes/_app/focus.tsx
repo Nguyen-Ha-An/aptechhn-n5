@@ -1,19 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { PageHeader } from '@/components/PageHeader';
-import { EmptyState } from '@/components/ui';
+import { z } from 'zod';
+import { FocusPage } from '@/features/focus/FocusPage';
 
-export const Route = createFileRoute('/_app/focus')({
-  component: FocusPage,
+const focusSearchSchema = z.object({
+  todo: z.string().optional(),
 });
 
-function FocusPage() {
-  return (
-    <div>
-      <PageHeader title="Focus" />
-      <EmptyState
-        title="Focus"
-        body="This page is being rebuilt."
-      />
-    </div>
-  );
+export const Route = createFileRoute('/_app/focus')({
+  validateSearch: (search: Record<string, unknown>) => focusSearchSchema.parse(search),
+  component: FocusRouteComponent,
+});
+
+function FocusRouteComponent() {
+  const search = Route.useSearch();
+  return <FocusPage initialTodoId={search.todo} />;
 }
