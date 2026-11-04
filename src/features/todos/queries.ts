@@ -10,6 +10,7 @@ export type Todo = Database['public']['Tables']['todos']['Row'];
 export type TodoPriority = 'none' | 'low' | 'medium' | 'high';
 
 export interface AddTodoInput {
+  id?: string;
   title: string;
   due_date?: string | null;
   priority?: TodoPriority;
@@ -73,6 +74,7 @@ export function useAddTodo() {
       const { data, error } = await supabase
         .from('todos')
         .insert({
+          ...(input.id ? { id: input.id } : {}),
           user_id: user.id,
           title: input.title.trim(),
           due_date: input.due_date ?? null,
@@ -96,7 +98,7 @@ export function useAddTodo() {
         : 0;
 
       const optimisticTodo: Todo = {
-        id: crypto.randomUUID(),
+        id: newTodo.id ?? crypto.randomUUID(),
         user_id: user?.id || 'temp-user',
         title: newTodo.title.trim(),
         done: false,

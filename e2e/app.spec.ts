@@ -94,12 +94,15 @@ test.describe('FocusLearn End-to-End Suite', () => {
     const todoCheckbox = page.getByRole('checkbox', { name: todoTitle });
     await expect(todoCheckbox).toBeVisible();
 
-    // Complete todo
-    await todoCheckbox.check();
+    // Complete todo (moves into collapsed "Done (1)" details section)
+    await todoCheckbox.click();
+    const doneSummary = page.getByText(/Done \(1\)/i);
+    await expect(doneSummary).toBeVisible();
+    await doneSummary.click();
     await expect(todoCheckbox).toBeChecked();
 
-    // Undo completion (uncheck or trigger undo)
-    await todoCheckbox.uncheck();
+    // Undo completion (uncheck moves it back to open section)
+    await todoCheckbox.click();
     await expect(todoCheckbox).not.toBeChecked();
 
     // ------------------------------------------------------------------------

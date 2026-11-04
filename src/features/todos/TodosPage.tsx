@@ -37,7 +37,7 @@ export function TodosPage() {
     if (!trimmed) {
       return;
     }
-    addTodo.mutate({ title: trimmed });
+    addTodo.mutate({ id: crypto.randomUUID(), title: trimmed });
     setNewTitle('');
     addInputRef.current?.focus();
   };
