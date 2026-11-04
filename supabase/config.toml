@@ -33,7 +33,7 @@ otp_expiry = 3600
 subject = "Your FocusLearn sign-in link"
 content_path = "./supabase/templates/magic_link.html"
 
-[inbucket]
+[mailpit]
 enabled = true
 port = 54324
 
