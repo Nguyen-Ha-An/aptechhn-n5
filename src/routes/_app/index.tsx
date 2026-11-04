@@ -3,6 +3,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { EmptyState } from '@/components/ui';
 import { formatLongDate, browserTimeZone } from '@/lib/dates';
 import { useProfile } from '@/features/profile/queries';
+import { ImportBanner } from '@/features/import/ImportBanner';
 
 export const Route = createFileRoute('/_app/')({
   component: TodayPage,
@@ -16,6 +17,7 @@ function TodayPage() {
   return (
     <div>
       <PageHeader title={dateTitle} />
+      <ImportBanner />
       <EmptyState
         title="Today"
         body="This page is being rebuilt."
