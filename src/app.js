@@ -503,6 +503,7 @@ function startApp() {
     const focusSection = $('#focus');
     if (!main || !focusSection) return;
 
+    focusSection.append($('#zen-chat'));
     savedScroll = { x: window.scrollX, y: window.scrollY };
     savedBodyOverflow = document.body.style.overflow;
     savedFocusAttrs = {
@@ -543,6 +544,7 @@ function startApp() {
     zenActive = false;
 
     const focusSection = $('#focus');
+    $('#desk-left').append($('#zen-chat'));
     document.body.classList.remove('zen-active');
     document.body.style.overflow = savedBodyOverflow;
 
