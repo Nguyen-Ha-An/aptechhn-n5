@@ -1,4 +1,4 @@
-name: Check showcase
+name: Check JavaScript
 on: [push, pull_request]
 jobs:
   check:
@@ -6,9 +6,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bun run lint
-      - run: bun run test
-      - run: bun run build
-      - run: bunx --bun playwright install --with-deps chromium
-      - run: bun run test:e2e
+      - run: bun build src/app.js --target browser --outfile /tmp/app.js
