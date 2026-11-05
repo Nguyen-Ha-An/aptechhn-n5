@@ -303,6 +303,120 @@
     }
     #exit-zen { display: none; }
 
+    /* 6b. Daily Focus Schedule & Bar Chart. */
+    .focus-stats {
+      margin-top: 24px;
+      padding: 20px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+    }
+    .focus-stats-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .focus-stats-total {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .focus-task-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .focus-task-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .focus-task-pill strong {
+      color: var(--accent);
+    }
+    .focus-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      min-height: 210px;
+      padding: 28px 12px 12px;
+      background: var(--surface);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+    .focus-bar-item {
+      flex: 1;
+      min-width: 96px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+    }
+    .focus-bar-track {
+      width: 100%;
+      height: 120px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      border-bottom: 2px solid var(--rule);
+      padding: 0 8px;
+    }
+    .focus-bar-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .focus-bar-fill {
+      width: 100%;
+      max-width: 48px;
+      min-height: 8px;
+      background: var(--accent);
+      border-radius: 6px 6px 0 0;
+      transition: height 0.2s ease;
+    }
+    .focus-chart-empty {
+      margin: auto;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 16px;
+    }
+    .focus-bar-time {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .focus-bar-task {
+      font-size: 12px;
+      line-height: 1.3;
+      max-width: 120px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    #zen-chat { display: none; width: 100%; max-width: 680px; margin: 20px 0; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+    body.zen-active #zen-chat { display: block; }
+    #zen-chat summary { cursor: pointer; min-height: 44px; font-weight: 600; }
+    #chat-messages { max-height: 240px; overflow-y: auto; }
+    #chat-messages p { white-space: pre-wrap; padding: 10px; background: var(--paper); border-radius: 8px; }
+    #chat-status { color: var(--muted); }
     /* 7. Full-window Zen view (body.zen-active). */
     body.zen-active {
       overflow: hidden;
@@ -419,6 +533,7 @@
       }
     }
   </style>
+  <script defer src="./src/ai-config.js"></script>
   <script defer src="./src/app.js"></script>
 </head>
 <body>
@@ -471,7 +586,7 @@
         <textarea id="note-text" rows="5" maxlength="50000"></textarea>
         <div class="row">
           <button class="primary" id="save-note">Add note</button>
-          <button id="new-note" type="button">Clear editor</button>
+          <button id="new-note" type="button">New note</button>
         </div>
       </form>
     </section>
@@ -506,6 +621,27 @@
         </div>
       </form>
       <p id="focus-feedback" role="alert"></p>
+      <details id="zen-chat">
+        <summary>Chat AI · Gemini</summary>
+        <div id="chat-messages" role="log" aria-label="Cuộc trò chuyện AI" aria-live="polite"></div>
+        <form id="chat-form">
+          <label for="chat-message">Bạn muốn hỏi gì?</label>
+          <textarea id="chat-message" rows="2" maxlength="4000" required placeholder="Giải thích giúp tôi…"></textarea>
+          <div class="row">
+            <button id="chat-send" class="primary">Gửi</button>
+            <button id="chat-clear" type="button">Xóa chat</button>
+          </div>
+        </form>
+        <p id="chat-status" role="status"></p>
+      </details>
+      <div id="focus-stats" class="focus-stats focus-setup" aria-labelledby="focus-stats-title">
+        <div class="focus-stats-head">
+          <h3 id="focus-stats-title">Biểu đồ Focus trong ngày</h3>
+          <span id="focus-stats-total" class="focus-stats-total"></span>
+        </div>
+        <div id="focus-task-summary" class="focus-task-summary"></div>
+        <div id="focus-chart" class="focus-chart" role="img" aria-label="Biểu đồ cột thời gian biểu focus trong ngày"></div>
+      </div>
     </section>
   </main>
   <footer>
