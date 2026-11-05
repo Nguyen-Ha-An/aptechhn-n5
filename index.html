@@ -411,7 +411,7 @@
       overflow: hidden;
     }
 
-    #zen-chat { display: none; width: 100%; max-width: 680px; margin: 20px 0; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
+    #zen-chat { display: block; width: 100%; max-width: 680px; margin: 20px 0; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
     body.zen-active #zen-chat { display: block; }
     #zen-chat summary { cursor: pointer; min-height: 44px; font-weight: 600; }
     #chat-messages { max-height: 240px; overflow-y: auto; }
@@ -621,7 +621,7 @@
         </div>
       </form>
       <p id="focus-feedback" role="alert"></p>
-      <details id="zen-chat">
+      <details id="zen-chat" open>
         <summary>Chat AI · Gemini</summary>
         <div id="chat-messages" role="log" aria-label="Cuộc trò chuyện AI" aria-live="polite"></div>
         <form id="chat-form">

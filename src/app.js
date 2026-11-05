@@ -609,7 +609,19 @@ function startApp() {
   }, 1000);
 
   // Chat AI: a small Gemini REST request. The deployment supplies the key.
-  const chatHistory = [];
+  const chatStorageKey = 'focuslearn-chat-v1';
+  let chatHistory = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(chatStorageKey) || '[]');
+    if (Array.isArray(saved)) chatHistory = saved.filter(message =>
+      (message?.role === 'user' || message?.role === 'model') &&
+      typeof message.parts?.[0]?.text === 'string'
+    ).slice(-100);
+  } catch (_) { /* Keep chat usable if browser storage is unavailable. */ }
+  function saveChat() {
+    try { localStorage.setItem(chatStorageKey, JSON.stringify(chatHistory)); }
+    catch (_) { chatStatus.textContent = 'Không lưu được lịch sử chat trên trình duyệt này.'; }
+  }
   let chatBusy = false;
   const chatStatus = $('#chat-status');
   const chatInput = $('#chat-message');
@@ -621,6 +633,7 @@ function startApp() {
     $('#chat-messages').append(message);
     $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
   }
+  for (const message of chatHistory) addChatMessage(message.role === 'user' ? 'Bạn' : 'AI', message.parts[0].text);
   $('#chat-form').onsubmit = async event => {
     event.preventDefault();
     const text = chatInput.value.trim();
@@ -653,10 +666,11 @@ function startApp() {
       const answer = result.candidates?.[0]?.content?.parts?.filter(part => !part.thought).map(part => part.text || '').join('').trim();
       if (!answer) throw new Error('AI chưa trả lời được câu này. Hãy đổi cách hỏi.');
       chatHistory.push(userMessage, { role: 'model', parts: [{ text: answer }] });
-      if (chatHistory.length > 10) chatHistory.splice(0, chatHistory.length - 10);
+      if (chatHistory.length > 100) chatHistory.splice(0, chatHistory.length - 100);
       addChatMessage('AI', answer);
       chatInput.value = '';
       chatStatus.textContent = '';
+      saveChat();
     } catch (error) {
       chatStatus.textContent = error.name === 'TimeoutError' ? 'AI trả lời quá lâu. Bạn thử gửi lại nhé.' :
         error instanceof TypeError ? 'Không kết nối được AI. Kiểm tra mạng rồi thử lại.' : error.message;
@@ -672,6 +686,7 @@ function startApp() {
     chatHistory.length = 0;
     $('#chat-messages').replaceChildren();
     chatStatus.textContent = '';
+    saveChat();
     chatInput.value = '';
   };
 
