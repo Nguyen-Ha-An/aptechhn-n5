@@ -50,7 +50,7 @@
     .skip:focus { top: 8px; }
     @media (max-width: 480px) { body { padding: 20px; } header { gap: 8px 16px; } nav { order: 3; width: 100%; } section { margin: 32px 0; } }
   </style>
-  <script type="module" src="./src/app.js"></script>
+  <script defer src="./src/app.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -87,18 +87,28 @@
       <ul id="note-list"></ul>
       <p id="notes-empty" class="muted" hidden>No notes yet. Write your first one below.</p>
       <form id="note-form">
-        <label for="note-title">Title</label><input id="note-title" required maxlength="200" />
-        <label for="note-text">Text</label><textarea id="note-text" rows="5" maxlength="50000"></textarea>
-        <div class="row"><button class="primary" id="save-note">Add note</button><button id="new-note" type="button">Clear editor</button><span id="note-status" role="status"></span></div>
+        <label for="note-title">Title</label>
+        <input id="note-title" required maxlength="200" />
+        <label for="note-text">Text</label>
+        <textarea id="note-text" rows="5" maxlength="50000"></textarea>
+        <div class="row">
+          <button class="primary" id="save-note">Add note</button>
+          <button id="new-note" type="button">Clear editor</button>
+          <span id="note-status" role="status"></span>
+        </div>
       </form>
     </section>
 
     <section id="focus" aria-labelledby="focus-title">
       <h2 id="focus-title">Focus timer</h2>
       <form id="timer-form">
-        <label for="minutes">Minutes</label><input id="minutes" type="number" min="1" max="180" value="25" required />
+        <label for="minutes">Minutes</label>
+        <input id="minutes" type="number" min="1" max="180" value="25" required />
         <output id="timer" class="timer" role="timer" aria-label="Time remaining">25:00</output>
-        <div class="row"><button id="start-timer" class="primary">Start timer</button><button id="reset-timer" type="button">Reset timer</button></div>
+        <div class="row">
+          <button id="start-timer" class="primary">Start timer</button>
+          <button id="reset-timer" type="button">Reset timer</button>
+        </div>
       </form>
       <p id="timer-status" role="status">Choose a few minutes for one task.</p>
     </section>

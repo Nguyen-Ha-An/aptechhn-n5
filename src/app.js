@@ -1,6 +1,6 @@
 // 1. Sample data and two small helpers. The page markup is in index.html.
-export const storageKey = 'focuslearn-simple-v1';
-export function sampleData() {
+const storageKey = 'focuslearn-simple-v1';
+function sampleData() {
   return {
     tasks: [
       { id: 'task-1', title: 'Practice JavaScript arrays', done: false },
@@ -15,12 +15,12 @@ export function sampleData() {
     theme: 'light',
   };
 }
-export function remainingSeconds(timer, now = Date.now()) {
+function remainingSeconds(timer, now = Date.now()) {
   const active = timer.runningSince === null ? 0 : Math.max(0, (now - timer.runningSince) / 1000);
   return Math.max(0, Math.ceil(timer.duration - timer.elapsed - active));
 }
 // Check saved data before using it. Broken data should never overwrite the backup.
-export function readData(value) {
+function readData(value) {
   function validRows(rows, fieldsAreValid) {
     if (!Array.isArray(rows)) return false;
 
@@ -106,13 +106,17 @@ function startApp() {
       title.textContent = task.title;
       title.classList.toggle('done', task.done);
       check.checked = task.done;
-      check.onchange = () => attempt(() => {
-        try { change(next => { next.tasks.find(item => item.id === task.id).done = check.checked; }); }
-        finally {
-          check.checked = data.tasks.find(item => item.id === task.id).done;
-          title.classList.toggle('done', check.checked);
-        }
-      });
+      check.onchange = () => {
+        attempt(() => {
+          change(next => {
+            const savedTask = next.tasks.find(item => item.id === task.id);
+            savedTask.done = check.checked;
+          });
+        });
+        // Restore the checkbox if saving failed.
+        check.checked = data.tasks.find(item => item.id === task.id).done;
+        title.classList.toggle('done', check.checked);
+      };
       row.querySelector('button').onclick = () => attempt(() => {
         change(next => { next.tasks = next.tasks.filter(item => item.id !== task.id); });
         showTasks();
@@ -166,7 +170,10 @@ function startApp() {
     }
     $('#notes-empty').hidden = data.notes.length > 0;
   }
-  $('#note-form').oninput = () => { dirty = true; $('#note-status').textContent = 'Unsaved changes'; };
+  $('#note-form').oninput = () => {
+    dirty = true;
+    $('#note-status').textContent = 'Unsaved changes';
+  };
   $('#note-form').onsubmit = event => {
     event.preventDefault();
     attempt(() => {
@@ -174,7 +181,11 @@ function startApp() {
       if (!note.title) throw new Error('Give your note a title.');
       change(next => {
         const index = next.notes.findIndex(item => item.id === note.id);
-        if (index < 0) next.notes.push(note); else next.notes[index] = note;
+        if (index < 0) {
+          next.notes.push(note);
+        } else {
+          next.notes[index] = note;
+        }
       });
       selectedNote = note.id;
       dirty = false;
@@ -247,14 +258,20 @@ function startApp() {
     try { save(sampleData()); } catch (error) { blocked = wasBlocked; throw error; }
     clearEditor();
     $('#minutes').value = 25;
-    showTasks(); showNotes(); showTimer(); showTheme();
+    showTasks();
+    showNotes();
+    showTimer();
+    showTheme();
     feedback('Examples restored.');
   });
   $('#date').textContent = new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }).format(new Date());
   $('#minutes').value = data.timer.duration / 60;
-  showTasks(); showNotes(); showTimer(); showTheme();
+  showTasks();
+  showNotes();
+  showTimer();
+  showTheme();
   $('#loading').hidden = true;
 }
 
-// This guard also lets unit tests import the helpers without a browser.
-if (typeof document !== 'undefined') startApp();
+// Start after the HTML has loaded.
+startApp();
