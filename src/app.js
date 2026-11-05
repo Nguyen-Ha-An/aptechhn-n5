@@ -58,6 +58,12 @@ function readData(value) {
     }
     data.timer = { duration: timer.duration, elapsed: timer.elapsed, runningSince: timer.runningSince };
   }
+  const session = value.focusSession;
+  if (session && typeof session.id === 'string' && typeof session.taskTitle === 'string' &&
+      typeof session.date === 'string' && typeof session.time === 'string' &&
+      Number.isInteger(session.minutes) && session.minutes >= 1 && session.minutes <= 180) {
+    data.focusSession = { ...session, taskId: typeof session.taskId === 'string' ? session.taskId : '' };
+  }
   if (value.theme === 'dark' || value.settings?.theme === 'dark') data.theme = 'dark';
   return data;
 }
@@ -96,6 +102,7 @@ function startApp() {
     blocked = true;
     feedback('Saved data could not be read. Examples are shown. Use Reset examples to start again.', true);
   }
+  selectedFocusTaskId = data.focusSession?.taskId || '';
   function save(next) {
     if (blocked) throw new Error('Use Reset examples before editing unreadable saved data.');
     try { localStorage.setItem(storageKey, JSON.stringify(next)); }
@@ -269,9 +276,137 @@ function startApp() {
     if (dirty) { event.preventDefault(); event.returnValue = ''; }
   });
 
-  // 5. Countdown and full-window Zen mode.
+  // 5. Countdown, daily focus bar chart, and full-window Zen mode.
+  const sessionsKey = 'focuslearn-sessions-v1';
+  let focusSessions = [];
+  let sessionsBlocked = false;
+
+  function todayDateKey() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+  function currentTimeLabel() {
+    return new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  }
+  try {
+    const savedSessions = localStorage.getItem(sessionsKey);
+    if (savedSessions) {
+      const parsed = JSON.parse(savedSessions);
+      if (!Array.isArray(parsed) || !parsed.every(item => item &&
+          typeof item.id === 'string' && typeof item.date === 'string' &&
+          typeof item.time === 'string' && typeof item.taskTitle === 'string' &&
+          Number.isInteger(item.minutes) && item.minutes >= 1 && item.minutes <= 180 && item.completed === true)) {
+        throw new Error('Invalid focus history');
+      }
+      focusSessions = parsed;
+    }
+  } catch {
+    sessionsBlocked = true;
+    focusFeedback('Không đọc được lịch sử Focus. Dữ liệu cũ được giữ nguyên.');
+  }
+
+  function saveSessions(nextSessions) {
+    if (sessionsBlocked) throw new Error('Không đọc được lịch sử Focus. Dùng Reset examples để đặt lại.');
+    try { localStorage.setItem(sessionsKey, JSON.stringify(nextSessions)); }
+    catch { throw new Error('Không lưu được lịch sử Focus. Kiểm tra bộ nhớ trình duyệt.'); }
+    focusSessions = nextSessions;
+  }
+
+  // Thông báo khi hết giờ tập trung; trả về true khi đã phát thông báo hết giờ.
+  function notifyTimerDone(taskTitle, minutes) {
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('FocusLearn — Time is up!', {
+          body: `Đã hoàn thành ${minutes} phút focus (${taskTitle}). Nghỉ ngơi một chút nhé!`,
+        });
+      }
+      if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+    } catch { /* ignore notification errors */ }
+    return true;
+  }
+
+  function showFocusStats() {
+    const chartEl = $('#focus-chart');
+    const totalEl = $('#focus-stats-total');
+    const summaryEl = $('#focus-task-summary');
+    if (!chartEl || !totalEl || !summaryEl) return;
+
+    const today = todayDateKey();
+    const todaySessions = focusSessions.filter(
+      item => item && item.completed === true && item.date === today && Number(item.minutes) > 0
+    );
+    const totalMinutes = todaySessions.reduce((sum, item) => sum + Number(item.minutes), 0);
+    chartEl.setAttribute('aria-label', `Hôm nay: ${totalMinutes} phút, ${todaySessions.length} phiên Focus hoàn thành`);
+    totalEl.textContent = `Tổng hôm nay: ${totalMinutes} phút (${todaySessions.length} lần focus)`;
+
+    // Gom nhóm tổng số phút theo từng Task đã hoàn thành trong ngày.
+    const byTask = new Map();
+    for (const item of todaySessions) {
+      const name = item.taskTitle || 'Focus without a task';
+      byTask.set(name, (byTask.get(name) || 0) + Number(item.minutes));
+    }
+    summaryEl.replaceChildren();
+    for (const [taskName, mins] of byTask.entries()) {
+      const pill = document.createElement('span');
+      pill.className = 'focus-task-pill';
+      const label = document.createElement('span');
+      label.textContent = `${taskName}:`;
+      const strong = document.createElement('strong');
+      strong.textContent = `${mins} phút`;
+      pill.append(label, strong);
+      summaryEl.append(pill);
+    }
+
+    // Vẽ biểu đồ cột chỉ cho những lần đã chạy hết giờ và có thông báo hết giờ.
+    chartEl.replaceChildren();
+    if (todaySessions.length === 0) {
+      const emptyMsg = document.createElement('p');
+      emptyMsg.className = 'focus-chart-empty';
+      emptyMsg.textContent = 'Chưa có lần focus nào hoàn thành hôm nay. Khi đồng hồ chạy hết giờ và báo "Time is up", phiên focus mới được tính và lưu vào biểu đồ.';
+      chartEl.append(emptyMsg);
+      return;
+    }
+
+    const maxMinutes = Math.max(30, ...todaySessions.map(item => Number(item.minutes)));
+    for (const session of todaySessions) {
+      const item = document.createElement('div');
+      item.className = 'focus-bar-item';
+
+      const track = document.createElement('div');
+      track.className = 'focus-bar-track';
+
+      const value = document.createElement('span');
+      value.className = 'focus-bar-value';
+      value.textContent = `${session.minutes}p`;
+
+      const fill = document.createElement('div');
+      fill.className = 'focus-bar-fill';
+      const heightPct = Math.max(12, Math.round((Number(session.minutes) / maxMinutes) * 100));
+      fill.style.height = `${heightPct}%`;
+      fill.title = `${session.time} — ${session.taskTitle}: ${session.minutes} phút`;
+
+      track.append(value, fill);
+
+      const time = document.createElement('span');
+      time.className = 'focus-bar-time';
+      time.textContent = session.time;
+
+      const task = document.createElement('span');
+      task.className = 'focus-bar-task';
+      task.textContent = session.taskTitle || 'Focus without a task';
+
+      item.append(track, time, task);
+      chartEl.append(item);
+    }
+  }
+
   function showTimer() {
     const seconds = remainingSeconds(data.timer);
+    const justFinished = seconds === 0 && data.timer.runningSince !== null;
+
     const running = data.timer.runningSince !== null && seconds > 0;
     const sessionActive = data.timer.runningSince !== null || data.timer.elapsed > 0;
     const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -296,6 +431,26 @@ function startApp() {
     if ($('#timer-status').textContent !== status) {
       $('#timer-status').textContent = status;
     }
+
+    // Chỉ khi đồng hồ vừa chạy hết giờ (chạm 0) và đã hiện thông báo hết giờ thì mới lưu & tính vào biểu đồ.
+    if (justFinished) {
+      // A stable ID prevents counting again after reload; saved metadata keeps the task title.
+      const completedSession = {
+        ...(data.focusSession || {
+          id: `timer-${data.timer.runningSince}-${data.timer.duration}`,
+          date: todayDateKey(), time: currentTimeLabel(),
+          taskTitle: 'Focus without a task', minutes: Math.round(data.timer.duration / 60),
+        }),
+        completed: true,
+      };
+      if (!focusSessions.some(item => item.id === completedSession.id)) {
+        try {
+          saveSessions([...focusSessions, completedSession]);
+          notifyTimerDone(completedSession.taskTitle, completedSession.minutes);
+          showFocusStats();
+        } catch (error) { focusFeedback(error.message); }
+      }
+    }
   }
   if ($('#timer-form')) $('#timer-form').noValidate = true;
   $('#timer-form').onsubmit = event => {
@@ -304,7 +459,7 @@ function startApp() {
       change(next => {
         const timer = next.timer;
         if (timer.runningSince !== null) {
-          timer.elapsed = timer.duration - remainingSeconds(timer);
+          timer.elapsed = Math.min(timer.duration, timer.elapsed + Math.max(0, (Date.now() - timer.runningSince) / 1000));
           timer.runningSince = null;
         } else {
           if (timer.elapsed === 0) {
@@ -314,6 +469,17 @@ function startApp() {
               throw new Error('Choose a whole number of minutes from 1 to 180.');
             }
             timer.duration = minutes * 60;
+            const currentTask = data.tasks.find(t => !t.done && t.id === selectedFocusTaskId);
+            // Save session metadata with the timer; only completed sessions appear in the chart.
+            next.focusSession = {
+              taskId: selectedFocusTaskId,
+              id: crypto.randomUUID(),
+              date: todayDateKey(),
+              time: currentTimeLabel(),
+              taskTitle: currentTask ? currentTask.title : 'Focus without a task',
+              minutes,
+              completed: false,
+            };
           }
           timer.runningSince = Date.now();
         }
@@ -323,10 +489,12 @@ function startApp() {
     }, true);
   };
   $('#reset-timer').onclick = () => attempt(() => {
-    change(next => { next.timer = { duration: data.timer.duration, elapsed: 0, runningSince: null }; });
+    // Nếu Reset trước khi hết giờ thì hủy phiên đang chạy, không lưu vào biểu đồ.
+    change(next => { next.timer = { duration: data.timer.duration, elapsed: 0, runningSince: null }; delete next.focusSession; });
     $('#minutes').value = data.timer.duration / 60;
     showTimer();
     showFocusTasks();
+    showFocusStats();
   }, true);
 
   function enterZen() {
@@ -410,8 +578,8 @@ function startApp() {
       const focusSection = $('#focus');
       if (!focusSection) return;
       const controls = Array.from(
-        focusSection.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
-      ).filter(el => !el.disabled && !el.hidden && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden');
+        focusSection.querySelectorAll('summary, button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')
+      ).filter(el => !el.disabled && !el.hidden && (!el.closest('details:not([open])') || el.tagName === 'SUMMARY') && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden');
 
       if (controls.length === 0) {
         event.preventDefault();
@@ -434,7 +602,78 @@ function startApp() {
     }
   });
 
-  setInterval(showTimer, 1000);
+  let statsDate = todayDateKey();
+  setInterval(() => {
+    showTimer();
+    if (statsDate !== todayDateKey()) { statsDate = todayDateKey(); showFocusStats(); }
+  }, 1000);
+
+  // Chat AI: a small Gemini REST request. The deployment supplies the key.
+  const chatHistory = [];
+  let chatBusy = false;
+  const chatStatus = $('#chat-status');
+  const chatInput = $('#chat-message');
+  function addChatMessage(who, text) {
+    const message = document.createElement('p');
+    const label = document.createElement('strong');
+    label.textContent = who + ': ';
+    message.append(label, document.createTextNode(text));
+    $('#chat-messages').append(message);
+    $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+  }
+  $('#chat-form').onsubmit = async event => {
+    event.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text || chatBusy) return;
+    const key = window.FOCUSLEARN_AI?.apiKey;
+    if (!key) { chatStatus.textContent = 'Chat chưa được cấu hình. Thêm GEMINI_API_KEY vào GitHub Secrets rồi deploy lại.'; return; }
+    chatBusy = true;
+    $('#chat-send').disabled = true;
+    $('#chat-clear').disabled = true;
+    chatInput.disabled = true;
+    chatStatus.textContent = 'Đang trả lời…';
+    addChatMessage('Bạn', text);
+    const userMessage = { role: 'user', parts: [{ text }] };
+    try {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: 'Bạn là trợ lý học tập. Trả lời ngắn gọn, rõ ràng bằng ngôn ngữ của người dùng. Dùng văn bản thuần.' }] },
+          contents: [...chatHistory.slice(-10), userMessage],
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) {
+        if (response.status === 429) throw new Error('AI đang quá tải hoặc hết lượt. Thử lại sau.');
+        if (response.status === 400 || response.status === 401 || response.status === 403) throw new Error('Không kết nối được AI. Kiểm tra API key và quyền truy cập.');
+        throw new Error('Dịch vụ AI gặp lỗi. Thử lại sau.');
+      }
+      const result = await response.json();
+      const answer = result.candidates?.[0]?.content?.parts?.filter(part => !part.thought).map(part => part.text || '').join('').trim();
+      if (!answer) throw new Error('AI chưa trả lời được câu này. Hãy đổi cách hỏi.');
+      chatHistory.push(userMessage, { role: 'model', parts: [{ text: answer }] });
+      if (chatHistory.length > 10) chatHistory.splice(0, chatHistory.length - 10);
+      addChatMessage('AI', answer);
+      chatInput.value = '';
+      chatStatus.textContent = '';
+    } catch (error) {
+      chatStatus.textContent = error.name === 'TimeoutError' ? 'AI trả lời quá lâu. Bạn thử gửi lại nhé.' :
+        error instanceof TypeError ? 'Không kết nối được AI. Kiểm tra mạng rồi thử lại.' : error.message;
+    } finally {
+      chatBusy = false;
+      $('#chat-send').disabled = false;
+      $('#chat-clear').disabled = false;
+      chatInput.disabled = false;
+      if (zenActive && $('#zen-chat').open) chatInput.focus();
+    }
+  };
+  $('#chat-clear').onclick = () => {
+    chatHistory.length = 0;
+    $('#chat-messages').replaceChildren();
+    chatStatus.textContent = '';
+    chatInput.value = '';
+  };
 
   // 6. Theme and a single reset button. No settings screen.
   function showTheme() {
@@ -450,6 +689,8 @@ function startApp() {
     const wasBlocked = blocked;
     blocked = false;
     try { save(sampleData()); } catch (error) { blocked = wasBlocked; throw error; }
+    sessionsBlocked = false;
+    saveSessions([]);
     selectedFocusTaskId = '';
     clearEditor();
     $('#minutes').value = 25;
@@ -457,6 +698,7 @@ function startApp() {
     showFocusTasks();
     showNotes();
     showTimer();
+    showFocusStats();
     showTheme();
     feedback('Examples restored.');
   });
@@ -467,6 +709,7 @@ function startApp() {
   showFocusTasks();
   showNotes();
   showTimer();
+  showFocusStats();
   showTheme();
   $('#loading').hidden = true;
 }
