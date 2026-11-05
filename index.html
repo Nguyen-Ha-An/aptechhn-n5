@@ -56,7 +56,11 @@
   <a class="skip" href="#main">Skip to content</a>
   <header>
     <a class="brand" href="#main">FocusLearn</a>
-    <nav aria-label="Main navigation"><a href="#tasks">Tasks</a><a href="#notes">Notes</a><a href="#focus">Timer</a></nav>
+    <nav aria-label="Main navigation">
+      <a href="#tasks">Tasks</a>
+      <a href="#notes">Notes</a>
+      <a href="#focus">Timer</a>
+    </nav>
     <button id="theme" type="button" aria-pressed="false">Dark mode</button>
   </header>
   <main id="main" tabindex="-1">
@@ -69,7 +73,10 @@
       <h2 id="tasks-title">Tasks</h2>
       <form id="task-form">
         <label for="task-title">What needs doing?</label>
-        <div class="row"><input id="task-title" required maxlength="500" placeholder="Read one chapter" /><button class="primary">Add task</button></div>
+        <div class="row">
+          <input id="task-title" required maxlength="500" placeholder="Read one chapter" />
+          <button class="primary">Add task</button>
+        </div>
       </form>
       <ul id="task-list"></ul>
       <p id="tasks-empty" class="muted" hidden>No tasks yet. Add one small thing.</p>
@@ -100,7 +107,17 @@
   <noscript>Enable JavaScript to use tasks, notes and the timer.</noscript>
 
   <!-- Repeated rows live in HTML. JavaScript copies them and fills in the text. -->
-  <template id="task-template"><li class="task-row"><label><input type="checkbox" /><span></span></label><button type="button">Delete</button></li></template>
-  <template id="note-template"><li class="note-row"><button class="open-note" type="button"></button><button class="delete-note" type="button">Delete</button></li></template>
+  <template id="task-template">
+    <li class="task-row">
+      <label><input type="checkbox" /><span></span></label>
+      <button type="button">Delete</button>
+    </li>
+  </template>
+  <template id="note-template">
+    <li class="note-row">
+      <button class="open-note" type="button"></button>
+      <button class="delete-note" type="button">Delete</button>
+    </li>
+  </template>
 </body>
 </html>

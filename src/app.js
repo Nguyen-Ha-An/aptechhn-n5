@@ -19,18 +19,43 @@ export function remainingSeconds(timer, now = Date.now()) {
   const active = timer.runningSince === null ? 0 : Math.max(0, (now - timer.runningSince) / 1000);
   return Math.max(0, Math.ceil(timer.duration - timer.elapsed - active));
 }
+// Check saved data before using it. Broken data should never overwrite the backup.
 export function readData(value) {
-  const validRows = (rows, valid) => Array.isArray(rows) && rows.every(row => row && typeof row.id === 'string' && valid(row)) && new Set(rows.map(row => row.id)).size === rows.length;
-  if (!value || !validRows(value.tasks, task => typeof task.title === 'string' && typeof task.done === 'boolean') ||
-      !validRows(value.notes, note => typeof note.title === 'string' && typeof note.text === 'string')) throw new Error('Saved tasks or notes could not be read.');
+  function validRows(rows, fieldsAreValid) {
+    if (!Array.isArray(rows)) return false;
+
+    const ids = new Set();
+    for (const row of rows) {
+      if (!row || typeof row.id !== 'string' || !fieldsAreValid(row)) return false;
+      if (ids.has(row.id)) return false;
+      ids.add(row.id);
+    }
+    return true;
+  }
+
+  const tasksAreValid = value && validRows(value.tasks, task =>
+    typeof task.title === 'string' && typeof task.done === 'boolean'
+  );
+  const notesAreValid = value && validRows(value.notes, note =>
+    typeof note.title === 'string' && typeof note.text === 'string'
+  );
+  if (!tasksAreValid || !notesAreValid) {
+    throw new Error('Saved tasks or notes could not be read.');
+  }
+
   const data = sampleData();
   data.tasks = value.tasks;
   data.notes = value.notes;
-  if (value.timer && (!value.timer.mode || value.timer.mode === 'timed')) {
-    const timer = value.timer;
-    if (!Number.isFinite(timer.duration) || timer.duration < 60 || timer.duration > 10800 ||
-        !Number.isFinite(timer.elapsed) || timer.elapsed < 0 ||
-        !(timer.runningSince === null || Number.isFinite(timer.runningSince))) throw new Error('Saved timer could not be read.');
+
+  // Older versions may have used a different type of timer.
+  const timer = value.timer;
+  if (timer && (!timer.mode || timer.mode === 'timed')) {
+    const validDuration = Number.isFinite(timer.duration) && timer.duration >= 60 && timer.duration <= 10800;
+    const validElapsed = Number.isFinite(timer.elapsed) && timer.elapsed >= 0;
+    const validStart = timer.runningSince === null || Number.isFinite(timer.runningSince);
+    if (!validDuration || !validElapsed || !validStart) {
+      throw new Error('Saved timer could not be read.');
+    }
     data.timer = { duration: timer.duration, elapsed: timer.elapsed, runningSince: timer.runningSince };
   }
   if (value.theme === 'dark' || value.settings?.theme === 'dark') data.theme = 'dark';
@@ -39,6 +64,7 @@ export function readData(value) {
 
 function startApp() {
   // 2. Read browser storage. Keep the previous version's data as a backup.
+  // Use $('selector') as a short way to find an element on the page.
   const $ = selector => document.querySelector(selector);
   let data = sampleData();
   let blocked = false;
@@ -62,6 +88,7 @@ function startApp() {
     catch { throw new Error('Could not save. Allow browser storage or free up space, then try again.'); }
     data = next;
   }
+  // Edit a copy first, so a failed save does not change what the page shows.
   function change(edit) {
     const next = structuredClone(data);
     edit(next);
@@ -165,11 +192,21 @@ function startApp() {
   function showTimer() {
     const seconds = remainingSeconds(data.timer);
     const running = data.timer.runningSince !== null;
-    $('#timer').textContent = `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
-    $('#start-timer').textContent = running ? 'Pause timer' : data.timer.elapsed ? 'Resume timer' : 'Start timer';
+    const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const secondsLeft = String(seconds % 60).padStart(2, '0');
+    $('#timer').textContent = `${minutes}:${secondsLeft}`;
+
+    let buttonText = 'Start timer';
+    if (running) buttonText = 'Pause timer';
+    else if (data.timer.elapsed) buttonText = 'Resume timer';
+    $('#start-timer').textContent = buttonText;
     $('#start-timer').disabled = seconds === 0;
     $('#minutes').disabled = running || data.timer.elapsed > 0;
-    $('#timer-status').textContent = seconds === 0 ? 'Time is up. Take a short break.' : running ? 'Focus on one task.' : data.timer.elapsed ? 'Paused.' : 'Choose a few minutes for one task.';
+    let status = 'Choose a few minutes for one task.';
+    if (seconds === 0) status = 'Time is up. Take a short break.';
+    else if (running) status = 'Focus on one task.';
+    else if (data.timer.elapsed) status = 'Paused.';
+    $('#timer-status').textContent = status;
   }
   $('#timer-form').onsubmit = event => {
     event.preventDefault();
