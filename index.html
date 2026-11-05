@@ -469,6 +469,9 @@
       text-align: center;
       justify-items: center;
     }
+    body.zen-active .focus-setup-grid { display: block; }
+    .time-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    body.zen-active .time-options { justify-content: center; }
     body.zen-active .focus-readout {
       width: 100%;
       background: var(--surface);
@@ -489,6 +492,10 @@
       text-align: center;
       margin-top: 12px;
     }
+    #zen-notes { display: none; }
+    body.zen-active #zen-notes { display: block; width: 100%; max-width: 680px; margin-top: 20px; }
+    #zen-notes > summary { cursor: pointer; font-weight: 600; }
+    body.zen-active #notes { margin: 12px 0 0; text-align: left; }
 
     /* 8. Footer and responsive breakpoints (900px two-column desk, small screens). */
     footer {
@@ -625,9 +632,16 @@
               <option value="">Focus without a task</option>
             </select>
           </div>
-          <div class="focus-setup">
+          <div>
             <label for="minutes">Minutes</label>
             <input id="minutes" type="number" min="1" max="180" step="1" value="25" required />
+            <div class="time-options" aria-label="Suggested durations">
+              <button type="button" data-minutes="5">5 min</button>
+              <button type="button" data-minutes="15">15 min</button>
+              <button type="button" data-minutes="25">25 min</button>
+              <button type="button" data-minutes="45">45 min</button>
+              <button type="button" data-minutes="60">60 min</button>
+            </div>
           </div>
         </div>
         <div class="focus-readout">
@@ -642,6 +656,10 @@
         </div>
       </form>
       <p id="focus-feedback" role="alert"></p>
+
+      <details id="zen-notes">
+        <summary>Open notes</summary>
+      </details>
 
       <div id="focus-stats" class="focus-stats focus-setup" aria-labelledby="focus-stats-title">
         <div class="focus-stats-head">

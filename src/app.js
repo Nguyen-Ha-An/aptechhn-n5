@@ -422,6 +422,7 @@ function startApp() {
     $('#reset-timer').textContent = seconds === 0 ? 'Start again' : 'Reset timer';
     if (wasStartFocused && seconds === 0) $('#reset-timer').focus();
     $('#minutes').disabled = sessionActive;
+    document.querySelectorAll('[data-minutes]').forEach(button => { button.disabled = sessionActive; });
     if ($('#focus-task')) $('#focus-task').disabled = sessionActive;
 
     let status = 'Choose a few minutes for one task.';
@@ -453,6 +454,9 @@ function startApp() {
     }
   }
   if ($('#timer-form')) $('#timer-form').noValidate = true;
+  document.querySelectorAll('[data-minutes]').forEach(button => {
+    button.onclick = () => { $('#minutes').value = button.dataset.minutes; };
+  });
   $('#timer-form').onsubmit = event => {
     event.preventDefault();
     attempt(() => {
@@ -504,6 +508,7 @@ function startApp() {
     if (!main || !focusSection) return;
 
     focusSection.append($('#zen-chat'));
+    $('#zen-notes').append($('#notes'));
     savedScroll = { x: window.scrollX, y: window.scrollY };
     savedBodyOverflow = document.body.style.overflow;
     savedFocusAttrs = {
@@ -545,6 +550,8 @@ function startApp() {
 
     const focusSection = $('#focus');
     $('#desk-left').append($('#zen-chat'));
+    $('#main').insertBefore($('#notes'), focusSection);
+    $('#zen-notes').open = false;
     document.body.classList.remove('zen-active');
     document.body.style.overflow = savedBodyOverflow;
 
