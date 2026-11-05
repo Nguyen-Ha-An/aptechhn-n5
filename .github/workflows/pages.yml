@@ -21,7 +21,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           mkdir -p _site/src
-          cp index.html _site/index.html
+          node -e 'const fs = require("fs"); const version = process.env.GITHUB_SHA; const html = fs.readFileSync("index.html", "utf8").replace(/(src="\.\/src\/(?:app|ai-config)\.js)(")/g, `$1?v=${version}$2`); fs.writeFileSync("_site/index.html", html);'
           cp src/app.js _site/src/app.js
           node -e 'require("fs").writeFileSync("_site/src/ai-config.js", "window.FOCUSLEARN_AI = " + JSON.stringify({apiKey: process.env.GEMINI_API_KEY || ""}) + ";\n")'
       - uses: actions/upload-pages-artifact@v3
