@@ -1,4 +1,5 @@
 name: Check JavaScript
+# Kiểm tra mã JavaScript khi có commit được đẩy lên hoặc có pull request.
 on: [push, pull_request]
 jobs:
   check:
@@ -6,4 +7,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
+      # Dùng Bun đóng gói thử để phát hiện lỗi cú pháp hoặc lỗi build.
       - run: bun build src/app.js --target browser --outfile /tmp/app.js

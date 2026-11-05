@@ -1,4 +1,5 @@
-// 1. data mẫu sẽ lên
+// 1. Dữ liệu mẫu được dùng khi trình duyệt chưa có dữ liệu đã lưu.
+// Mỗi công việc và ghi chú có id riêng để tìm, sửa hoặc xóa đúng mục.
 const storageKey = 'focuslearn-simple-v1';
 function sampleData() {
   return {
@@ -15,11 +16,14 @@ function sampleData() {
     theme: 'light',
   };
 }
+// Tính thời gian còn lại từ thời điểm bắt đầu và số giây đã chạy trước khi tạm dừng.
+// Dùng thời gian thực thay vì chỉ đếm từng nhịp để đồng hồ vẫn đúng sau khi tải lại trang.
 function remainingSeconds(timer, now = Date.now()) {
   const active = timer.runningSince === null ? 0 : Math.max(0, (now - timer.runningSince) / 1000);
   return Math.max(0, Math.ceil(timer.duration - timer.elapsed - active));
 }
-// kiểm tra data, data hỏng sẽ không bao giờ hiện lên
+// Kiểm tra dữ liệu đọc từ localStorage trước khi đưa lên giao diện.
+// Nếu công việc, ghi chú hoặc đồng hồ sai cấu trúc, báo lỗi thay vì ghi đè dữ liệu cũ.
 function readData(value) {
   function validRows(rows, fieldsAreValid) {
     if (!Array.isArray(rows)) return false;
@@ -47,7 +51,7 @@ function readData(value) {
   data.tasks = value.tasks;
   data.notes = value.notes;
 
-  // chế độ thời gian 
+  // Kiểm tra thời lượng, thời gian đã chạy và thời điểm bắt đầu của đồng hồ.
   const timer = value.timer;
   if (timer && (!timer.mode || timer.mode === 'timed')) {
     const validDuration = Number.isFinite(timer.duration) && timer.duration >= 60 && timer.duration <= 10800;
@@ -69,8 +73,8 @@ function readData(value) {
 }
 
 function startApp() {
-  // 2. Read browser storage. Keep the previous version's data as a backup.
-  // Use $('selector') as a short way to find an element on the page.
+  // 2. Khởi tạo giao diện và đọc dữ liệu đã lưu trong trình duyệt.
+  // Hàm $ giúp tìm nhanh một phần tử HTML bằng bộ chọn CSS.
   const $ = selector => document.querySelector(selector);
   let data = sampleData();
   let blocked = false;
@@ -83,6 +87,7 @@ function startApp() {
   let savedFocusAttrs = { role: null, ariaModal: null, ariaLabelledby: null };
   let savedBackground = [];
 
+  // Hiện lỗi ở khu vực chung và, khi cần, cả trong màn hình Focus/Zen.
   const focusFeedback = text => {
     if ($('#focus-feedback')) $('#focus-feedback').textContent = text;
   };
@@ -95,6 +100,8 @@ function startApp() {
     focusFeedback('');
     try { work(); } catch (error) { feedback(error.message, isFocus); }
   }
+  // Ưu tiên dữ liệu hiện tại; nếu chưa có thì thử đọc dữ liệu của phiên bản cũ.
+  // Nếu dữ liệu hỏng, chặn chỉnh sửa để tránh vô tình ghi đè bản đã lưu.
   try {
     const saved = localStorage.getItem(storageKey) || localStorage.getItem('focuslearn-showcase-v1');
     if (saved) data = readData(JSON.parse(saved));
@@ -103,21 +110,24 @@ function startApp() {
     feedback('Saved data could not be read. Examples are shown. Use Reset examples to start again.', true);
   }
   selectedFocusTaskId = data.focusSession?.taskId || '';
+  // Chỉ cập nhật biến data sau khi đã ghi thành công vào localStorage.
   function save(next) {
     if (blocked) throw new Error('Use Reset examples before editing unreadable saved data.');
     try { localStorage.setItem(storageKey, JSON.stringify(next)); }
     catch { throw new Error('Could not save. Allow browser storage or free up space, then try again.'); }
     data = next;
   }
-  // Edit a copy first, so a failed save does not change what the page shows.
+  // Sửa trên bản sao trước: nếu lưu thất bại, dữ liệu đang hiển thị vẫn giữ nguyên.
   function change(edit) {
     const next = structuredClone(data);
     edit(next);
     save(next);
   }
+  // Sao chép một mẫu hàng trong HTML để tạo từng công việc hoặc ghi chú.
   function copyTemplate(id) { return $(id).content.firstElementChild.cloneNode(true); }
 
-  // 3. Tasks: add, check off, delete, and sync the Focus task selector.
+  // 3. Công việc: thêm, đánh dấu hoàn thành, xóa và cập nhật danh sách chọn cho Focus.
+  // Chỉ công việc chưa hoàn thành mới xuất hiện trong danh sách chọn của đồng hồ.
   function showFocusTasks() {
     const openTasks = data.tasks.filter(task => !task.done);
     const total = data.tasks.length;
@@ -150,6 +160,7 @@ function startApp() {
       taskName.hidden = !currentTask;
     }
   }
+  // Tạo lại danh sách từ dữ liệu đã lưu và gắn thao tác cho từng hàng.
   function showTasks() {
     $('#task-list').replaceChildren();
     for (const task of data.tasks) {
@@ -166,7 +177,7 @@ function startApp() {
             savedTask.done = check.checked;
           });
         });
-        // Restore the checkbox if saving failed.
+        // Nếu lưu thất bại, trả ô chọn về trạng thái thực tế trong data.
         check.checked = data.tasks.find(item => item.id === task.id).done;
         title.classList.toggle('done', check.checked);
         showFocusTasks();
@@ -200,7 +211,8 @@ function startApp() {
     };
   }
 
-  // 4. Notes: open one, edit it, save it. Blank editor creates a new note.
+  // 4. Ghi chú: mở ghi chú có sẵn để sửa hoặc dùng biểu mẫu trống để tạo mới.
+  // Biến dirty cho biết biểu mẫu có thay đổi chưa lưu, giúp hỏi trước khi bỏ nội dung.
   function setNoteHeading(text) {
     if ($('#note-editor-heading')) $('#note-editor-heading').textContent = text;
   }
@@ -214,6 +226,7 @@ function startApp() {
     setNoteHeading('New note');
     showNotes();
   }
+  // Vẽ danh sách ghi chú, làm nổi mục đang chọn và gắn nút mở/xóa cho từng mục.
   function showNotes() {
     $('#note-list').replaceChildren();
     for (const note of data.notes) {
@@ -250,6 +263,7 @@ function startApp() {
     dirty = true;
     $('#note-status').textContent = 'Unsaved changes';
   };
+  // Khi lưu, tạo id mới cho ghi chú mới hoặc thay nội dung của ghi chú đang chọn.
   $('#note-form').onsubmit = event => {
     event.preventDefault();
     attempt(() => {
@@ -272,15 +286,18 @@ function startApp() {
     });
   };
   $('#new-note').onclick = () => { if (leaveNote()) clearEditor(); };
+  // Nhờ trình duyệt cảnh báo nếu người dùng rời trang khi còn nội dung chưa lưu.
   window.addEventListener('beforeunload', event => {
     if (dirty) { event.preventDefault(); event.returnValue = ''; }
   });
 
-  // 5. Countdown, daily focus bar chart, and full-window Zen mode.
+  // 5. Đồng hồ đếm ngược, lịch sử Focus trong ngày và chế độ Zen toàn màn hình.
+  // Lịch sử Focus dùng khóa riêng, tách khỏi dữ liệu công việc và ghi chú.
   const sessionsKey = 'focuslearn-sessions-v1';
   let focusSessions = [];
   let sessionsBlocked = false;
 
+  // Tạo ngày theo múi giờ trên thiết bị để nhóm các phiên hoàn thành trong ngày.
   function todayDateKey() {
     const now = new Date();
     const y = now.getFullYear();
@@ -291,6 +308,7 @@ function startApp() {
   function currentTimeLabel() {
     return new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
   }
+  // Đọc và kiểm tra lịch sử Focus; dữ liệu lỗi được giữ lại, không tự ghi đè.
   try {
     const savedSessions = localStorage.getItem(sessionsKey);
     if (savedSessions) {
@@ -315,7 +333,8 @@ function startApp() {
     focusSessions = nextSessions;
   }
 
-  // Thông báo khi hết giờ tập trung; trả về true khi đã phát thông báo hết giờ.
+  // Khi hết giờ, thử hiện thông báo nếu trình duyệt đã được cấp quyền và rung nếu thiết bị hỗ trợ.
+  // Hàm vẫn trả về true khi không thể hiện thông báo; việc này không chứng nhận thông báo đã xuất hiện.
   function notifyTimerDone(taskTitle, minutes) {
     try {
       if ('Notification' in window && Notification.permission === 'granted') {
@@ -324,7 +343,7 @@ function startApp() {
         });
       }
       if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
-    } catch { /* ignore notification errors */ }
+    } catch { /* Bỏ qua lỗi thông báo để đồng hồ và lịch sử vẫn tiếp tục hoạt động. */ }
     return true;
   }
 
@@ -360,7 +379,7 @@ function startApp() {
       summaryEl.append(pill);
     }
 
-    // Vẽ biểu đồ cột chỉ cho những lần đã chạy hết giờ và có thông báo hết giờ.
+    // Vẽ một cột cho mỗi phiên đã hoàn thành; chiều cao so sánh theo số phút.
     chartEl.replaceChildren();
     if (todaySessions.length === 0) {
       const emptyMsg = document.createElement('p');
@@ -403,6 +422,7 @@ function startApp() {
     }
   }
 
+  // Cập nhật số phút:giây, trạng thái nút và lưu phiên khi đồng hồ vừa về 0.
   function showTimer() {
     const seconds = remainingSeconds(data.timer);
     const justFinished = seconds === 0 && data.timer.runningSince !== null;
@@ -433,9 +453,9 @@ function startApp() {
       $('#timer-status').textContent = status;
     }
 
-    // Chỉ khi đồng hồ vừa chạy hết giờ (chạm 0) và đã hiện thông báo hết giờ thì mới lưu & tính vào biểu đồ.
+    // Khi đồng hồ về 0, lưu phiên hoàn thành rồi thử phát thông báo và cập nhật biểu đồ.
     if (justFinished) {
-      // A stable ID prevents counting again after reload; saved metadata keeps the task title.
+      // Dùng id ổn định để không đếm lặp sau khi tải lại; giữ tên công việc cùng phiên.
       const completedSession = {
         ...(data.focusSession || {
           id: `timer-${data.timer.runningSince}-${data.timer.duration}`,
@@ -454,9 +474,11 @@ function startApp() {
     }
   }
   if ($('#timer-form')) $('#timer-form').noValidate = true;
+  // Nút thời gian gợi ý chỉ điền số phút; người dùng vẫn có thể nhập số khác.
   document.querySelectorAll('[data-minutes]').forEach(button => {
     button.onclick = () => { $('#minutes').value = button.dataset.minutes; };
   });
+  // Cùng một nút dùng để bắt đầu, tạm dừng hoặc tiếp tục phiên hiện tại.
   $('#timer-form').onsubmit = event => {
     event.preventDefault();
     attempt(() => {
@@ -474,7 +496,7 @@ function startApp() {
             }
             timer.duration = minutes * 60;
             const currentTask = data.tasks.find(t => !t.done && t.id === selectedFocusTaskId);
-            // Save session metadata with the timer; only completed sessions appear in the chart.
+            // Lưu thông tin phiên khi bắt đầu; biểu đồ chỉ tính sau khi phiên chạy hết giờ.
             next.focusSession = {
               taskId: selectedFocusTaskId,
               id: crypto.randomUUID(),
@@ -501,6 +523,8 @@ function startApp() {
     showFocusStats();
   }, true);
 
+  // Đưa chat và ghi chú hiện có vào Zen để dùng chung dữ liệu và bản nháp.
+  // Lưu trạng thái trang, khóa phần nền và giới hạn điều hướng trong màn hình Zen.
   function enterZen() {
     if (zenActive) return;
     const main = $('#main');
@@ -544,6 +568,7 @@ function startApp() {
     $('#exit-zen')?.focus();
   }
 
+  // Đưa chat và ghi chú về vị trí cũ, khôi phục trạng thái nền và vị trí cuộn.
   function exitZen() {
     if (!zenActive) return;
     zenActive = false;
@@ -576,6 +601,7 @@ function startApp() {
   if ($('#enter-zen')) $('#enter-zen').onclick = enterZen;
   if ($('#exit-zen')) $('#exit-zen').onclick = exitZen;
 
+  // Escape thoát Zen; Tab và Shift+Tab giữ con trỏ bàn phím trong các điều khiển đang thấy.
   document.addEventListener('keydown', event => {
     if (!zenActive) return;
     if (event.key === 'Escape' && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
@@ -611,13 +637,15 @@ function startApp() {
     }
   });
 
+  // Mỗi giây cập nhật đồng hồ; khi sang ngày mới thì vẽ lại thống kê của ngày đó.
   let statsDate = todayDateKey();
   setInterval(() => {
     showTimer();
     if (statsDate !== todayDateKey()) { statsDate = todayDateKey(); showFocusStats(); }
   }, 1000);
 
-  // Chat AI: a small Gemini REST request. The deployment supplies the key.
+  // 6. Chat AI: đọc tối đa 100 tin nhắn gần nhất từ localStorage của trình duyệt.
+  // Khi gửi, ứng dụng gọi Gemini trực tiếp từ trình duyệt bằng khóa trong cấu hình.
   const chatStorageKey = 'focuslearn-chat-v1';
   let chatHistory = [];
   try {
@@ -626,7 +654,7 @@ function startApp() {
       (message?.role === 'user' || message?.role === 'model') &&
       typeof message.parts?.[0]?.text === 'string'
     ).slice(-100);
-  } catch (_) { /* Keep chat usable if browser storage is unavailable. */ }
+  } catch (_) { /* Vẫn cho phép dùng chat nếu không đọc được bộ nhớ trình duyệt. */ }
   function saveChat() {
     try { localStorage.setItem(chatStorageKey, JSON.stringify(chatHistory)); }
     catch (_) { chatStatus.textContent = 'Không lưu được lịch sử chat trên trình duyệt này.'; }
@@ -634,6 +662,7 @@ function startApp() {
   let chatBusy = false;
   const chatStatus = $('#chat-status');
   const chatInput = $('#chat-message');
+  // Dùng textContent và nút văn bản để hiển thị nội dung như chữ, không chạy HTML trong tin nhắn.
   function addChatMessage(who, text) {
     const message = document.createElement('p');
     const label = document.createElement('strong');
@@ -643,6 +672,8 @@ function startApp() {
     $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
   }
   for (const message of chatHistory) addChatMessage(message.role === 'user' ? 'Bạn' : 'AI', message.parts[0].text);
+  // Gửi câu hỏi cùng tối đa 10 tin nhắn gần nhất để AI có ngữ cảnh.
+  // Chỉ lưu cặp câu hỏi và câu trả lời sau khi nhận được câu trả lời hợp lệ.
   $('#chat-form').onsubmit = async event => {
     event.preventDefault();
     const text = chatInput.value.trim();
@@ -692,6 +723,7 @@ function startApp() {
       if (zenActive && $('#zen-chat').open) chatInput.focus();
     }
   };
+  // Xóa lịch sử đang hiển thị và ghi danh sách rỗng vào localStorage.
   $('#chat-clear').onclick = () => {
     chatHistory.length = 0;
     $('#chat-messages').replaceChildren();
@@ -700,7 +732,8 @@ function startApp() {
     chatInput.value = '';
   };
 
-  // 6. Theme and a single reset button. No settings screen.
+  // 7. Giao diện sáng/tối và nút khôi phục dữ liệu mẫu.
+  // Khôi phục đặt lại công việc, ghi chú, đồng hồ và lịch sử Focus; không xóa lịch sử chat.
   function showTheme() {
     document.documentElement.dataset.theme = data.theme;
     $('#theme').setAttribute('aria-pressed', String(data.theme === 'dark'));
@@ -727,6 +760,7 @@ function startApp() {
     showTheme();
     feedback('Examples restored.');
   });
+  // Hiển thị ngày và vẽ toàn bộ giao diện lần đầu từ dữ liệu đã đọc.
   $('#date').textContent = new Intl.DateTimeFormat('en-GB', { dateStyle: 'full', timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }).format(new Date());
   $('#minutes').value = data.timer.duration / 60;
   setNoteHeading('New note');
@@ -739,5 +773,5 @@ function startApp() {
   $('#loading').hidden = true;
 }
 
-// Start after the HTML has loaded.
+// Chạy sau khi HTML đã được phân tích xong nhờ thuộc tính defer trên thẻ script.
 startApp();

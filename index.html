@@ -1,11 +1,14 @@
 <!doctype html>
+<!-- Khai báo ngôn ngữ chính để trình duyệt và trình đọc màn hình hiểu nội dung. -->
 <html lang="en">
 <head>
+  <!-- UTF-8 hỗ trợ tiếng Việt; viewport giúp bố cục vừa màn hình điện thoại. -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>FocusLearn</title>
   <style>
-    /* 1. Theme and base reset: warm paper, serif headings, terracotta accents. */
+    /* 1. Màu giao diện, kiểu chữ và các quy tắc nền dùng chung cho toàn trang. */
+    /* Biến màu dùng chung: đổi một giá trị tại đây sẽ áp dụng cho các phần dùng var(...). */
     :root {
       color-scheme: light;
       --paper: #fbfaf7;
@@ -18,6 +21,7 @@
       --accent-soft: rgba(181, 67, 47, 0.12);
       --on-accent: #fff;
     }
+    /* JavaScript đổi data-theme trên thẻ html để chọn bộ màu tối này. */
     :root[data-theme="dark"] {
       color-scheme: dark;
       --paper: #191817;
@@ -31,6 +35,7 @@
       --on-accent: #191817;
     }
     * { box-sizing: border-box; }
+    /* Thuộc tính hidden được JavaScript dùng để ẩn các phần chưa cần hiển thị. */
     [hidden] { display: none !important; }
     html { scroll-behavior: smooth; }
     body {
@@ -43,7 +48,8 @@
     }
     p, li, button, h1, h2, h3, output, span { overflow-wrap: anywhere; }
 
-    /* 2. Header, navigation, and page intro. */
+    /* 2. Thanh đầu trang, liên kết điều hướng và phần giới thiệu. */
+    /* Liên kết bỏ qua điều hướng chỉ hiện khi người dùng di chuyển bằng bàn phím. */
     .skip {
       position: absolute;
       top: -100px;
@@ -86,6 +92,7 @@
     }
     #date { margin: 0 0 8px; }
     #loading { margin: 8px 0 0; color: var(--muted); }
+    /* Hai vùng thông báo lỗi: một ở trang chính, một dùng khi đang Focus/Zen. */
     #feedback, #focus-feedback {
       min-height: 28px;
       margin: 8px 0 0;
@@ -97,7 +104,7 @@
       margin: 0;
     }
 
-    /* 3. Desk layout and section surfaces. */
+    /* 3. Bố cục bàn học và kiểu khung cho từng khu vực. */
     main { display: block; }
     section {
       margin: 28px 0;
@@ -139,7 +146,7 @@
       display: none;
     }
 
-    /* 4. Forms, inputs, and buttons. */
+    /* 4. Kiểu chung cho biểu mẫu, ô nhập liệu và nút bấm. */
     label {
       display: block;
       margin: 14px 0 6px;
@@ -171,6 +178,7 @@
       background: var(--paper);
       font-weight: 600;
     }
+    /* Làm mờ điều khiển bị khóa để người dùng nhận biết không thể thao tác. */
     button:disabled, input:disabled, select:disabled, textarea:disabled {
       opacity: 0.55;
       cursor: not-allowed;
@@ -180,6 +188,7 @@
       color: var(--on-accent);
       border-color: var(--accent);
     }
+    /* Viền nổi giúp nhận ra phần tử đang được chọn bằng bàn phím. */
     :focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 3px;
@@ -189,7 +198,7 @@
     .row input { flex: 1; min-width: 160px; }
     .muted, footer { color: var(--muted); }
 
-    /* 5. Tasks and notes lists. */
+    /* 5. Danh sách công việc, ghi chú và biểu mẫu chỉnh sửa. */
     ul { list-style: none; padding: 0; margin: 16px 0 0; }
     li {
       border-bottom: 1px solid var(--rule);
@@ -214,6 +223,7 @@
       flex-shrink: 0;
       accent-color: var(--accent);
     }
+    /* JavaScript thêm lớp done khi công việc được đánh dấu hoàn thành. */
     .done {
       text-decoration: line-through;
       color: var(--muted);
@@ -236,6 +246,7 @@
       min-width: 0;
       background: var(--paper);
     }
+    /* Phân biệt ghi chú đang mở trong biểu mẫu với các ghi chú khác. */
     .note-row.is-selected, .open-note.is-selected {
       background: var(--accent-soft);
       border-color: var(--accent);
@@ -259,7 +270,7 @@
       font-weight: 600;
     }
 
-    /* 6. Focus timer section and states. */
+    /* 6. Đồng hồ tập trung, phần chọn công việc và trạng thái phiên. */
     #timer-form {
       display: grid;
       gap: 16px;
@@ -303,7 +314,7 @@
     }
     #exit-zen { display: none; }
 
-    /* 6b. Daily Focus Schedule & Bar Chart. */
+    /* 6b. Thống kê và biểu đồ thời gian tập trung trong ngày. */
     .focus-stats {
       margin-top: 24px;
       padding: 20px;
@@ -415,20 +426,24 @@
     body.zen-active #zen-chat { display: block; margin: 20px 0; }
     #zen-chat > summary { cursor: pointer; min-height: 44px; font-weight: 600; }
     #chat-history > summary { cursor: pointer; font-weight: 600; }
+    /* Giới hạn chiều cao lịch sử và cho cuộn khi có nhiều tin nhắn. */
     #chat-messages { max-height: 240px; overflow-y: auto; }
+    /* Khi chưa có tin nhắn, hiện lời nhắc mà không cần thêm dữ liệu giả. */
     #chat-messages:empty::before { content: 'Chưa có tin nhắn nào.'; color: var(--muted); }
     #chat-messages p { white-space: pre-wrap; padding: 10px; background: var(--paper); border-radius: 8px; }
     #chat-status { color: var(--muted); }
-    /* 7. Full-window Zen view (body.zen-active). */
+    /* 7. Zen: khi body có lớp zen-active, ẩn phần nền và mở Focus toàn màn hình. */
     body.zen-active {
       overflow: hidden;
     }
+    /* Ẩn phần còn lại của bàn học để chỉ giữ khu vực Focus khi vào Zen. */
     body.zen-active > header,
     body.zen-active > footer,
     body.zen-active > .skip,
     body.zen-active #main > :not(#focus) {
       display: none !important;
     }
+    /* Phủ khu vực Focus lên toàn bộ cửa sổ và cho phép cuộn nếu nội dung dài. */
     body.zen-active #focus {
       position: fixed;
       inset: 0;
@@ -492,12 +507,13 @@
       text-align: center;
       margin-top: 12px;
     }
+    /* Nút mở ghi chú chỉ xuất hiện trong Zen; ghi chú dùng chung biểu mẫu bên ngoài. */
     #zen-notes { display: none; }
     body.zen-active #zen-notes { display: block; width: 100%; max-width: 680px; margin-top: 20px; }
     #zen-notes > summary { cursor: pointer; font-weight: 600; }
     body.zen-active #notes { margin: 12px 0 0; text-align: left; }
 
-    /* 8. Footer and responsive breakpoints (900px two-column desk, small screens). */
+    /* 8. Chân trang và bố cục đáp ứng: hai cột từ 900px, điều chỉnh cho màn hình nhỏ. */
     footer {
       display: flex;
       align-items: center;
@@ -510,6 +526,7 @@
       font-size: 14px;
     }
     footer p { margin: 0; }
+    /* Từ 900px, chia bàn học thành hai cột bằng nhau và kéo cao cho cân. */
     @media (min-width: 900px) {
       main {
         display: grid;
@@ -528,6 +545,7 @@
       main > #date { margin-bottom: 0; }
       section { margin: 0; }
     }
+    /* Trên điện thoại, giảm khoảng đệm và cho thanh điều hướng xuống dòng. */
     @media (max-width: 600px) {
       body { padding: 16px; }
       section { padding: 18px; margin: 20px 0; }
@@ -542,11 +560,14 @@
       }
     }
   </style>
+  <!-- defer chờ HTML được phân tích xong; tải cấu hình AI trước mã xử lý chính. -->
   <script defer src="./src/ai-config.js"></script>
   <script defer src="./src/app.js"></script>
 </head>
 <body>
+  <!-- Phím Tab đưa người dùng tới liên kết đi thẳng vào nội dung chính. -->
   <a class="skip" href="#main">Skip to content</a>
+  <!-- Thanh điều hướng và nút chuyển giao diện sáng/tối. -->
   <header>
     <a class="brand" href="#main">FocusLearn</a>
     <nav aria-label="Main navigation">
@@ -559,15 +580,18 @@
   <main id="main" tabindex="-1">
     <h1>Your study desk</h1>
     <p id="date" class="muted"></p>
+    <!-- JavaScript điền ngày, ẩn trạng thái tải và đưa lỗi vào vùng thông báo. -->
     <p id="loading" role="status">Loading your desk...</p>
     <p id="feedback" role="alert"></p>
 
+    <!-- Cột trái gồm danh sách công việc và khung chat AI. -->
     <div id="desk-left">
     <section id="tasks" aria-labelledby="tasks-title">
       <div class="section-head">
         <h2 id="tasks-title">Tasks</h2>
         <span id="tasks-count" class="count-badge" aria-live="polite"></span>
       </div>
+      <!-- Biểu mẫu nhận tên; JavaScript kiểm tra và thêm công việc khi gửi. -->
       <form id="task-form">
         <label for="task-title">What needs doing?</label>
         <div class="row">
@@ -575,16 +599,20 @@
           <button class="primary">Add task</button>
         </div>
       </form>
+      <!-- Danh sách ban đầu rỗng: JavaScript tạo các hàng từ dữ liệu đã lưu. -->
       <ul id="task-list"></ul>
       <p id="tasks-empty" class="muted empty-state" hidden>No tasks yet. Add one small thing.</p>
     </section>
 
+      <!-- Chat có thể thu gọn; lịch sử được lưu riêng trong localStorage. -->
       <details id="zen-chat" open>
         <summary>Chat AI · Gemini</summary>
+        <!-- details/summary cho phép đóng mở lịch sử; role log thông báo tin mới cho công nghệ hỗ trợ. -->
         <details id="chat-history" open>
           <summary>Lịch sử chat</summary>
           <div id="chat-messages" role="log" aria-label="Cuộc trò chuyện AI" aria-live="polite"></div>
         </details>
+        <!-- Giới hạn câu hỏi 4.000 ký tự; nút Xóa chat không gửi biểu mẫu. -->
         <form id="chat-form">
           <label for="chat-message">Bạn muốn hỏi gì?</label>
           <textarea id="chat-message" rows="2" maxlength="4000" required placeholder="Giải thích giúp tôi…"></textarea>
@@ -597,12 +625,15 @@
       </details>
     </div>
 
+    <!-- Danh sách và biểu mẫu ghi chú; phần này cũng được chuyển vào Zen khi cần. -->
     <section id="notes" aria-labelledby="notes-title">
       <div class="section-head">
         <h2 id="notes-title">Notes</h2>
       </div>
+      <!-- Danh sách và trạng thái trống được JavaScript cập nhật khi thêm hoặc xóa. -->
       <ul id="note-list"></ul>
       <p id="notes-empty" class="muted empty-state" hidden>No notes yet. Write your first one below.</p>
+      <!-- Cùng một biểu mẫu dùng để tạo ghi chú mới hoặc sửa ghi chú đã mở. -->
       <form id="note-form">
         <div class="editor-head">
           <h3 id="note-editor-heading">New note</h3>
@@ -619,12 +650,14 @@
       </form>
     </section>
 
+    <!-- Đồng hồ, lựa chọn thời gian và thống kê phiên tập trung. -->
     <section id="focus" aria-labelledby="focus-title">
       <div class="focus-head">
         <h2 id="focus-title">Focus timer</h2>
         <button id="exit-zen" type="button">Exit Zen</button>
       </div>
       <form id="timer-form">
+        <!-- Chọn công việc tùy ý và thời lượng từ 1 đến 180 phút hoặc dùng nút gợi ý. -->
         <div class="focus-setup-grid">
           <div class="focus-setup">
             <label for="focus-task">Task to focus on</label>
@@ -644,6 +677,7 @@
             </div>
           </div>
         </div>
+        <!-- output hiện thời gian còn lại; vùng trạng thái mô tả đang chạy, dừng hay hết giờ. -->
         <div class="focus-readout">
           <p id="focus-task-name" hidden></p>
           <output id="timer" class="timer" role="timer" aria-label="Time remaining">25:00</output>
@@ -657,10 +691,12 @@
       </form>
       <p id="focus-feedback" role="alert"></p>
 
+      <!-- Vùng chứa ghi chú chỉ hiển thị trong Zen; JavaScript chuyển ghi chú vào đây. -->
       <details id="zen-notes">
         <summary>Open notes</summary>
       </details>
 
+      <!-- Biểu đồ được JavaScript tạo từ các phiên Focus đã hoàn thành trong ngày. -->
       <div id="focus-stats" class="focus-stats focus-setup" aria-labelledby="focus-stats-title">
         <div class="focus-stats-head">
           <h3 id="focus-stats-title">Biểu đồ Focus trong ngày</h3>
@@ -671,19 +707,23 @@
       </div>
     </section>
   </main>
+  <!-- Nút khôi phục đưa dữ liệu chính và lịch sử Focus về trạng thái mẫu. -->
   <footer>
     <p>Example tasks and notes. Your edits stay in this browser.</p>
     <button id="reset-data" type="button">Reset examples</button>
   </footer>
+  <!-- Chỉ hiện khi trình duyệt tắt JavaScript. -->
   <noscript>Enable JavaScript to use tasks, notes and the timer.</noscript>
 
-  <!-- Repeated rows live in HTML. JavaScript copies them and fills in the text. -->
+  <!-- Mẫu hàng được JavaScript sao chép rồi điền nội dung cho từng công việc hoặc ghi chú. -->
+  <!-- Mẫu này chưa hiển thị trực tiếp; mỗi bản sao trở thành một hàng công việc. -->
   <template id="task-template">
     <li class="task-row">
       <label><input type="checkbox" /><span></span></label>
       <button type="button">Delete</button>
     </li>
   </template>
+  <!-- Mẫu hàng ghi chú có nút mở và nút xóa riêng. -->
   <template id="note-template">
     <li class="note-row">
       <button class="open-note" type="button"></button>
