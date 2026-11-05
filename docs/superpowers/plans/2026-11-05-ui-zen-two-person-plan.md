@@ -8,6 +8,8 @@
 
 **Status:** Planning only. All implementation checkboxes start unchecked. The draft PR is the shared tracker and remains draft until both people finish verification.
 
+**Shared draft PR:** [#4 — Plan: two-person UI polish and full-window Zen mode](https://github.com/Nguyen-Ha-An/aptechhn-n5/pull/4). Both people should use its checklists for progress and its branch for final integration.
+
 ## 1. Agreed behavior and design
 
 - Keep the single-page Tasks → Notes → Focus flow and current anchor navigation.
