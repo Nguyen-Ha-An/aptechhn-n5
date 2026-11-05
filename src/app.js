@@ -647,6 +647,7 @@ function startApp() {
     $('#chat-clear').disabled = true;
     chatInput.disabled = true;
     chatStatus.textContent = 'Đang trả lời…';
+    $('#chat-history').open = true;
     addChatMessage('Bạn', text);
     const userMessage = { role: 'user', parts: [{ text }] };
     try {

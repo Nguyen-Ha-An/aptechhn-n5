@@ -413,7 +413,8 @@
 
     #zen-chat { display: block; width: 100%; max-width: 680px; margin: 24px 0 0; padding: 16px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); }
     body.zen-active #zen-chat { display: block; margin: 20px 0; }
-    #zen-chat summary { cursor: pointer; min-height: 44px; font-weight: 600; }
+    #zen-chat > summary { cursor: pointer; min-height: 44px; font-weight: 600; }
+    #chat-history > summary { cursor: pointer; font-weight: 600; }
     #chat-messages { max-height: 240px; overflow-y: auto; }
     #chat-messages:empty::before { content: 'Chưa có tin nhắn nào.'; color: var(--muted); }
     #chat-messages p { white-space: pre-wrap; padding: 10px; background: var(--paper); border-radius: 8px; }
@@ -573,8 +574,10 @@
 
       <details id="zen-chat" open>
         <summary>Chat AI · Gemini</summary>
-        <strong>Lịch sử chat</strong>
-        <div id="chat-messages" role="log" aria-label="Cuộc trò chuyện AI" aria-live="polite"></div>
+        <details id="chat-history" open>
+          <summary>Lịch sử chat</summary>
+          <div id="chat-messages" role="log" aria-label="Cuộc trò chuyện AI" aria-live="polite"></div>
+        </details>
         <form id="chat-form">
           <label for="chat-message">Bạn muốn hỏi gì?</label>
           <textarea id="chat-message" rows="2" maxlength="4000" required placeholder="Giải thích giúp tôi…"></textarea>
