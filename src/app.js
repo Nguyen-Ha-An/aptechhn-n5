@@ -1,4 +1,4 @@
-// 1. Sample data and two small helpers. The page markup is in index.html.
+// 1. data mẫu sẽ lên
 const storageKey = 'focuslearn-simple-v1';
 function sampleData() {
   return {
@@ -19,7 +19,7 @@ function remainingSeconds(timer, now = Date.now()) {
   const active = timer.runningSince === null ? 0 : Math.max(0, (now - timer.runningSince) / 1000);
   return Math.max(0, Math.ceil(timer.duration - timer.elapsed - active));
 }
-// Check saved data before using it. Broken data should never overwrite the backup.
+// kiểm tra data, data hỏng sẽ không bao giờ hiện lên
 function readData(value) {
   function validRows(rows, fieldsAreValid) {
     if (!Array.isArray(rows)) return false;
@@ -47,7 +47,7 @@ function readData(value) {
   data.tasks = value.tasks;
   data.notes = value.notes;
 
-  // Older versions may have used a different type of timer.
+  // chế độ thời gian 
   const timer = value.timer;
   if (timer && (!timer.mode || timer.mode === 'timed')) {
     const validDuration = Number.isFinite(timer.duration) && timer.duration >= 60 && timer.duration <= 10800;
